@@ -99,6 +99,13 @@
                 />
 
             <Button
+                android:id="@+id/startScrollZoomAsyncButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Scroll and Zoom Async"
+                />
+
+            <Button
                 android:id="@+id/startBarPlotExButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

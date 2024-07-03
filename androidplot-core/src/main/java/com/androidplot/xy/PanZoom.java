@@ -1,8 +1,12 @@
 package com.androidplot.xy;
 
+import static java.lang.Math.abs;
+
 import android.graphics.RectF;
 import android.graphics.PointF;
 import androidx.annotation.NonNull;
+
+import android.util.Log;
 import android.view.*;
 
 import com.androidplot.*;
@@ -28,9 +32,12 @@ public class PanZoom implements View.OnTouchListener {
     private Pan pan;
     private Zoom zoom;
 
+    private Region axisRegion;
     private ZoomLimit zoomLimit;
     private boolean isEnabled = true;
 
+    private float dragThreshold = 20;
+    private Zoom dragDirection = Zoom.NONE;
     private DragState dragState = DragState.NONE;
     private PointF firstFingerPos;
 
@@ -79,7 +86,9 @@ public class PanZoom implements View.OnTouchListener {
         /**
          * Zoom each axis by the same amount, specifically the total distance between each finger.
          */
-        SCALE
+        SCALE,
+
+        STRETCH_DYNAMIC,
     }
 
     /**
@@ -95,7 +104,12 @@ public class PanZoom implements View.OnTouchListener {
          * Additionally to the outer bounds if plot.StepModel defines a value based increment
          * make sure at least one tick is visible by not zooming in further.
          */
-        MIN_TICKS
+        MIN_TICKS,
+
+        /**
+         * Additionally to the outer bounds if limits is defines
+         */
+        LIMITS,
     }
 
     // TODO: consider making this immutable / threadsafe
@@ -138,6 +152,7 @@ public class PanZoom implements View.OnTouchListener {
         this.pan = pan;
         this.zoom = zoom;
         this.zoomLimit = ZoomLimit.OUTER;
+        this.axisRegion = new Region(0, 1000);
     }
 
     // additional constructor not to break api
@@ -146,6 +161,16 @@ public class PanZoom implements View.OnTouchListener {
         this.pan = pan;
         this.zoom = zoom;
         this.zoomLimit = limit;
+        this.axisRegion = new Region(0, 1000);
+    }
+
+    // additional constructor not to break api
+    protected PanZoom(@NonNull XYPlot plot, Pan pan, Zoom zoom, ZoomLimit limit, Region zoomRegion) {
+        this.plot = plot;
+        this.pan = pan;
+        this.zoom = zoom;
+        this.zoomLimit = limit;
+        this.axisRegion = zoomRegion;
     }
 
     public State getState() {
@@ -205,6 +230,22 @@ public class PanZoom implements View.OnTouchListener {
         return pz;
     }
 
+    /**
+     * New method for enabling pan/zoom behavior on an instance of limits.
+     * @param plot
+     * @param pan
+     * @param zoom
+     * @param limit
+     * @param zoomRegion
+     * @return
+     */
+    public static PanZoom attach(@NonNull XYPlot plot, @NonNull Pan pan, @NonNull Zoom zoom, @NonNull ZoomLimit limit, @NonNull Region zoomRegion) {
+        PanZoom pz = new PanZoom(plot, pan, zoom, limit, zoomRegion);
+        plot.setOnTouchListener(pz);
+        return pz;
+    }
+
+
     public boolean isEnabled() {
         return isEnabled;
     }
@@ -228,6 +269,7 @@ public class PanZoom implements View.OnTouchListener {
                 case MotionEvent.ACTION_POINTER_DOWN: // second finger
                 {
                     setFingersRect(fingerDistance(event));
+                    dragDirection = Zoom.NONE;
                     // the distance run is done to avoid false alarms
                     if (getFingersRect().width() > MIN_DIST_2_FING || getFingersRect().width() < -MIN_DIST_2_FING) {
                         dragState = DragState.TWO_FINGERS;
@@ -368,7 +410,20 @@ public class PanZoom implements View.OnTouchListener {
 
         float scaleX = 1;
         float scaleY = 1;
-        switch (zoom) {
+        Zoom zoomValue = zoom;
+        if(zoomValue == Zoom.STRETCH_DYNAMIC)
+        {
+            if(dragDirection == Zoom.NONE){
+                float dirX = oldFingersRect.width() - getFingersRect().width();
+                float dirY = oldFingersRect.height() - getFingersRect().height();
+                if(abs(dirX) >  abs(dirY)) dragDirection = Zoom.STRETCH_HORIZONTAL;
+                else dragDirection = Zoom.STRETCH_VERTICAL;
+                Log.d("zoom", "dd: " + dragDirection.name());
+            }
+            zoomValue = dragDirection;
+        }
+
+        switch (zoomValue) {
             case STRETCH_HORIZONTAL:
                 scaleX = oldFingersRect.width() / getFingersRect().width();
                 if (!isValidScale(scaleX)) {
@@ -403,14 +458,14 @@ public class PanZoom implements View.OnTouchListener {
         if (EnumSet.of(
                 Zoom.STRETCH_HORIZONTAL,
                 Zoom.STRETCH_BOTH,
-                Zoom.SCALE).contains(zoom)) {
+                Zoom.SCALE).contains(zoomValue)) {
             calculateZoom(newRect, scaleX, true);
             adjustDomainBoundary(newRect.left, newRect.right, BoundaryMode.FIXED);
         }
         if (EnumSet.of(
                 Zoom.STRETCH_VERTICAL,
                 Zoom.STRETCH_BOTH,
-                Zoom.SCALE).contains(zoom)) {
+                Zoom.SCALE).contains(zoomValue)) {
             calculateZoom(newRect, scaleY, false);
             adjustRangeBoundary(newRect.top, newRect.bottom, BoundaryMode.FIXED);
         }
@@ -448,6 +503,16 @@ public class PanZoom implements View.OnTouchListener {
                 }
             }
 
+            // zoom limited
+            if(zoomLimit == ZoomLimit.LIMITS) {
+                if(axisRegion.getMin().floatValue() > (scale*span)) {
+                    offset = (float)(axisRegion.getMin().doubleValue() / 2.0f);
+                }
+                if(axisRegion.getMax().floatValue() < (scale*span)) {
+                    offset = (float)(axisRegion.getMax().doubleValue() / 2.0f);
+                }
+            }
+
             newRect.left = midPoint - offset;
             newRect.right = midPoint + offset;
             if(limits.isFullyDefined()) {
@@ -478,6 +543,14 @@ public class PanZoom implements View.OnTouchListener {
                 }
             }
         }
+    }
+
+    public void setZoomLimits(Region axisRegion) {
+        this.axisRegion = axisRegion;
+    }
+
+    public Region getZoomLimits() {
+        return this.axisRegion;
     }
 
     public Pan getPan() {

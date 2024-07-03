@@ -76,6 +76,10 @@ class MainActivity : Activity() {
             startActivity(Intent(this@MainActivity, TouchZoomExampleActivity::class.java))
         }
 
+        binding.startScrollZoomAsyncButton.setOnClickListener{
+            startActivity(Intent(this@MainActivity, SampledAsyncTouchZoomExampleActivity::class.java))
+        }
+
         binding.startXyRegionExampleButton.setOnClickListener {
             startActivity(Intent(this@MainActivity, XYRegionExampleActivity::class.java))
         }
