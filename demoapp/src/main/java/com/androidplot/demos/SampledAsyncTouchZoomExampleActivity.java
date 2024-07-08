@@ -80,6 +80,9 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         XYGraphWidget graph = plot.getGraph();
 
         graph.setPaddingRight(0f);
+        graph.setPaddingTop(0f);
+        graph.setPaddingBottom(0f);
+        graph.setPaddingLeft(0f);
         graph.setMarginRight(0f);
         graph.setMarginBottom(50f);
 

@@ -75,7 +75,7 @@ public class FastSampledXYSeries implements FastXYSeries, OrderedXYSeries {
 
     public void setPlot(XYPlot plot)
     {
-        if(this.plot == null){
+        if(this.plot != plot){
             if(rawData instanceof AutoRedrawable) ((AutoRedrawable)rawData).setPlot(plot);
             this.plot = plot;
         }
