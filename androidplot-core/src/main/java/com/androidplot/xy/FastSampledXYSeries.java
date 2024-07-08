@@ -41,7 +41,6 @@ public class FastSampledXYSeries implements FastXYSeries, OrderedXYSeries {
 
     protected void setZoomBounds(RectRegion bounds)
     {
-        // Расчет дельты окна
         double leftOffset = bounds.getxRegion().getMin().doubleValue();
         double rightOffset = bounds.getxRegion().getMax().doubleValue();
         double deltaBound = rightOffset - leftOffset;
@@ -52,8 +51,18 @@ public class FastSampledXYSeries implements FastXYSeries, OrderedXYSeries {
         } else {
             this.scaleFactor = Math.pow(this.ratio,(int)((Math.log(deltaBound / newThreshold) / ratioFactor + 1)));
         }
-        this.leftOffset = (int)(leftOffset - (leftOffset % this.scaleFactor));
-        int right = (int)(rightOffset + this.scaleFactor - (rightOffset % this.scaleFactor));
+
+        int startOffset;
+        try {
+            startOffset = minMax().getxRegion().getMin().intValue();
+        } catch (NullPointerException e)
+        {
+            startOffset = 0;
+        }
+
+        this.leftOffset = (int)(leftOffset - (leftOffset % this.scaleFactor)) - startOffset;
+        int right = (int)(rightOffset + this.scaleFactor - (rightOffset % this.scaleFactor)) - startOffset;
+        if(this.leftOffset < 0) this.leftOffset = 0;
         this.sizePoints = (int) ((right - this.leftOffset) / this.scaleFactor);
         if(rawData instanceof AutoRedrawable) {
             ((AutoRedrawable) rawData).setBound(bounds.getxRegion());

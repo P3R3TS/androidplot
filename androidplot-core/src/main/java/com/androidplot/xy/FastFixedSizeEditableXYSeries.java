@@ -49,14 +49,14 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
 
         if (this.plot != null) {
             if(bound != null && bound.contains(x.intValue() - 2) && plot.getOuterLimits().getMaxX().doubleValue() >= x.longValue()) this.plot.redraw();
-            resamplePan(x.doubleValue());
+            resamplePan(index);
         }
     }
 
-    private void resamplePan(double x)
+    public void resamplePan(int lastIndex)
     {
         try {
-            int lastVisibleIndex = (int) (x - (x % scaleFactor));
+            int lastVisibleIndex = (int) (lastIndex - (lastIndex % scaleFactor));
             if (plot.getOuterLimits().getMaxX().doubleValue() < getX(lastVisibleIndex).doubleValue()) {
                 boolean isBoundaries = plot.isBoundariesFrom(XYPlot.MoveType.Right);
                 plot.getOuterLimits().setMaxX(getX(lastVisibleIndex).doubleValue());

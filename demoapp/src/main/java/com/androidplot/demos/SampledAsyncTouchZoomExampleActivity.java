@@ -145,7 +145,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
             }
         }));
 
-        plot.getOuterLimits().set(0, 100, 0, 100);
+        plot.getOuterLimits().set(100000, 100100, 0, 100);
         initSpinners();
 
         // enable autoselect of sampling level based on visible boundaries:
@@ -159,7 +159,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     }
 
     private void reset() {
-        plot.setDomainBoundaries(0, 100, BoundaryMode.FIXED);
+        plot.setDomainBoundaries(100000, 100100, BoundaryMode.FIXED);
         plot.setRangeBoundaries(0, 100, BoundaryMode.FIXED);
         plot.redraw();
     }
@@ -168,7 +168,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     private void generateSeriesData() {
         new AsyncTask() {
 
-            PlotState autoPan = new PlotState(true);
+            PlotState autoPan = new PlotState(false);
 
             @Override
             protected Object doInBackground(Object[] objects) {
@@ -181,10 +181,10 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 
                 for (int i = 0; i < SERIES_SIZE; i++) {
 
-                    s1.setXYAndRedraw(i, r.nextInt(800) / 10f, i);
-                    s2.setXYAndRedraw(i, r.nextInt(400) / 10f, i);
-                    s3.setXYAndRedraw(i, r.nextInt(200) / 10f, i);
-                    s4.setXYAndRedraw(i, r.nextInt(100) / 10f, i);
+                    s1.setXYAndRedraw(i + 100000, r.nextInt(800) / 10f, i);
+                    s2.setXYAndRedraw(i + 100000, r.nextInt(400) / 10f, i);
+                    s3.setXYAndRedraw(i + 100000, r.nextInt(200) / 10f, i);
+                    s4.setXYAndRedraw(i + 100000, r.nextInt(100) / 10f, i);
 //                        series.addXY(i, r.nextInt(max));
                     try {
                         Thread.sleep(20);
