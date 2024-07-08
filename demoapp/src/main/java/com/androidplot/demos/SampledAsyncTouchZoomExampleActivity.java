@@ -19,6 +19,9 @@ package com.androidplot.demos;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
+import android.graphics.Paint;
+import android.graphics.PathEffect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,6 +54,7 @@ import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.ZoomEstimator;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Random;
 
 public class SampledAsyncTouchZoomExampleActivity extends Activity {
@@ -81,6 +85,39 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         });
         plot = findViewById(R.id.plot);
 
+        plot.getLayoutManager().remove(plot.getLegend());
+        plot.getLayoutManager().remove(plot.getTitle());
+
+        XYGraphWidget graph = plot.getGraph();
+
+        graph.setPaddingRight(0f);
+        graph.setMarginRight(0f);
+        graph.setMarginBottom(50f);
+
+        int color = Color.parseColor("#e1edfe");
+
+        graph.getBackgroundPaint().setColor(color);
+        graph.getDomainGridLinePaint().setColor(Color.GRAY);
+        graph.getDomainGridLinePaint().setPathEffect(new DashPathEffect(new float[] {10, 10}, 1));
+        graph.getGridBackgroundPaint().setColor(color);
+        graph.getRangeCursorPaint().setColor(Color.GRAY);
+        graph.getRangeCursorPaint().setPathEffect(new DashPathEffect(new float[] {10, 10}, 1));
+
+        graph.getRangeOriginLinePaint().setColor(Color.BLACK);
+        graph.getDomainOriginLinePaint().setColor(Color.BLACK);
+
+        graph.getRangeGridLinePaint().setColor(Color.GRAY);
+        graph.getRangeGridLinePaint().setPathEffect(new DashPathEffect(new float[] {10, 10}, 1));
+
+        graph.getDomainSubGridLinePaint().setColor(Color.GRAY);
+        graph.getDomainSubGridLinePaint().setPathEffect(new DashPathEffect(new float[] {10, 10}, 1));
+        graph.getRangeSubGridLinePaint().setColor(Color.GRAY);
+        graph.getRangeSubGridLinePaint().setPathEffect(new DashPathEffect(new float[] {10, 10}, 1));
+
+
+//        graph.getBackgroundPaint().setColor(Color.parseColor("#B3D3FC"));
+//        graph.getGridBackgroundPaint().setColor(graph.getDomainCursorPaint().getColor());
+
         // set a fixed origin and a "by-value" step mode so that grid lines will
         // move dynamically with the data when the users pans or zooms:
         plot.setUserDomainOrigin(0);
@@ -89,28 +126,28 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         // predefine the stepping of both axis
         // increment will be chosen from list to best fit NUM_GRIDLINES grid lines
         double[] inc_domain = new double[]{10, 50, 100, 500};
-        double[] inc_range = new double[]{1, 5, 10, 20, 50, 100};
+        double[] inc_range = new double[]{10};
         plot.setDomainStepModel(new StepModelFit(plot.getBounds().getxRegion(), inc_domain, NUM_GRIDLINES));
         plot.setRangeStepModel(new StepModelFit(plot.getBounds().getyRegion(), inc_range, NUM_GRIDLINES));
 
 
         panSpinner = findViewById(R.id.pan_spinner);
         zoomSpinner = findViewById(R.id.zoom_spinner);
-        plot.getGraph().setLinesPerRangeLabel(2);
+//        plot.getGraph().setLinesPerRangeLabel(2);
         plot.getGraph().setLinesPerDomainLabel(2);
-        plot.getGraph().getBackgroundPaint().setColor(Color.TRANSPARENT);
+        //plot.getGraph().getBackgroundPaint().setColor(Color.TRANSPARENT);
         plot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).
-                setFormat(new DecimalFormat("#####"));
+                setFormat(new DecimalFormat("####"));
         plot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.BOTTOM).
-                setFormat(new DecimalFormat("#####.#"));
+                setFormat(new DecimalFormat("######"));
+
+
 
         plot.setRangeLabel("");
         plot.setDomainLabel("");
 
         plot.setBorderStyle(Plot.BorderStyle.NONE, null, null);
 
-        plot.getLayoutManager().remove(plot.getLegend());
-        plot.getLayoutManager().remove(plot.getTitle());
         plot.getGraph().setSize(new Size(
                 1.0f, SizeMode.RELATIVE,
                 1.0f, SizeMode.RELATIVE
@@ -126,11 +163,14 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
             }
         }));
 
-        plot.getOuterLimits().set(0, 100, 0, 1000);
+        plot.getOuterLimits().set(0, 100, 0, 100);
         initSpinners();
 
         // enable autoselect of sampling level based on visible boundaries:
         plot.getRegistry().setEstimator(new WindowZoomEstimator());
+
+        plot.getGraph().setGridRect(null);
+        plot.getGraph().setLabelRect(null);
 
         generateSeriesData();
         reset();
@@ -138,7 +178,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 
     private void reset() {
         plot.setDomainBoundaries(0, 1000, BoundaryMode.FIXED);
-        plot.setRangeBoundaries(0, 1000, BoundaryMode.FIXED);
+        plot.setRangeBoundaries(0, 100, BoundaryMode.FIXED);
         plot.redraw();
     }
 
@@ -148,23 +188,19 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 
             @Override
             protected Object doInBackground(Object[] objects) {
-                generateAndAddSeries(800, new LineAndPointFormatter(Color.rgb(50, 0, 0), null,
-                        Color.argb(SERIES_ALPHA, 100, 0, 0), null));
-                generateAndAddSeries(400, new LineAndPointFormatter(Color.rgb(50, 50, 0), null,
-                        Color.argb(SERIES_ALPHA, 100, 100, 0), null));
-                generateAndAddSeries(200, new LineAndPointFormatter(Color.rgb(0, 50, 0), null,
-                        Color.argb(SERIES_ALPHA, 0, 100, 0), null));
-                generateAndAddSeries(100, new LineAndPointFormatter(Color.rgb(0, 0, 0), null,
-                        Color.argb(SERIES_ALPHA, 0, 0, 150), null));
+                generateAndAddSeries(800, new LineAndPointFormatter(Color.parseColor("#7763f6"), null, null, null));
+                generateAndAddSeries(400, new LineAndPointFormatter(Color.parseColor("#c56fa2"), null, null, null));
+                generateAndAddSeries(200, new LineAndPointFormatter(Color.parseColor("#1479ff"), null, null, null));
+                generateAndAddSeries(100, new LineAndPointFormatter(Color.parseColor("#ec3f3f"), null, null, null));
 
                 Random r = new Random();
 
                 for (int i = 0; i < SERIES_SIZE; i++) {
 
-                    s1.setXYAndRedraw(i, r.nextInt(800), i);
-                    s2.setXYAndRedraw(i, r.nextInt(400), i);
-                    s3.setXYAndRedraw(i, r.nextInt(200), i);
-                    s4.setXYAndRedraw(i, r.nextInt(100), i);
+                    s1.setXYAndRedraw(i, r.nextInt(800) / 10f, i);
+                    s2.setXYAndRedraw(i, r.nextInt(400) / 10f, i);
+                    s3.setXYAndRedraw(i, r.nextInt(200) / 10f, i);
+                    s4.setXYAndRedraw(i, r.nextInt(100) / 10f, i);
 //                        series.addXY(i, r.nextInt(max));
                     try {
                         Thread.sleep(20);
