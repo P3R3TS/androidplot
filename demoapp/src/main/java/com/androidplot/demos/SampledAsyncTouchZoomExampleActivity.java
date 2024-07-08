@@ -37,6 +37,7 @@ import com.androidplot.Region;
 import com.androidplot.ui.Size;
 import com.androidplot.ui.SizeMetric;
 import com.androidplot.ui.SizeMode;
+import com.androidplot.xy.BlockAutoPan;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.FastFixedSizeEditableXYSeries;
 import com.androidplot.xy.FastSampledXYSeries;
@@ -141,17 +142,10 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         plot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.BOTTOM).
                 setFormat(new DecimalFormat("######"));
 
-
-
         plot.setRangeLabel("");
         plot.setDomainLabel("");
 
         plot.setBorderStyle(Plot.BorderStyle.NONE, null, null);
-
-        plot.getGraph().setSize(new Size(
-                1.0f, SizeMode.RELATIVE,
-                1.0f, SizeMode.RELATIVE
-        ));
 
         panZoom = PanZoom.attach(plot, PanZoom.Pan.BOTH, PanZoom.Zoom.STRETCH_HORIZONTAL, PanZoom.ZoomLimit.LIMITS, new Region(20, 3600));
 
@@ -177,7 +171,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     }
 
     private void reset() {
-        plot.setDomainBoundaries(0, 1000, BoundaryMode.FIXED);
+        plot.setDomainBoundaries(0, 100, BoundaryMode.FIXED);
         plot.setRangeBoundaries(0, 100, BoundaryMode.FIXED);
         plot.redraw();
     }
@@ -186,12 +180,14 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     private void generateSeriesData() {
         new AsyncTask() {
 
+            BlockAutoPan autoPan = new BlockAutoPan(true);
+
             @Override
             protected Object doInBackground(Object[] objects) {
-                generateAndAddSeries(800, new LineAndPointFormatter(Color.parseColor("#7763f6"), null, null, null));
-                generateAndAddSeries(400, new LineAndPointFormatter(Color.parseColor("#c56fa2"), null, null, null));
-                generateAndAddSeries(200, new LineAndPointFormatter(Color.parseColor("#1479ff"), null, null, null));
-                generateAndAddSeries(100, new LineAndPointFormatter(Color.parseColor("#ec3f3f"), null, null, null));
+                generateAndAddSeries(800, new LineAndPointFormatter(Color.parseColor("#7763f6"), null, null, null), autoPan);
+                generateAndAddSeries(400, new LineAndPointFormatter(Color.parseColor("#c56fa2"), null, null, null), autoPan);
+                generateAndAddSeries(200, new LineAndPointFormatter(Color.parseColor("#1479ff"), null, null, null), autoPan);
+                generateAndAddSeries(100, new LineAndPointFormatter(Color.parseColor("#ec3f3f"), null, null, null), autoPan);
 
                 Random r = new Random();
 
@@ -219,9 +215,9 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         }.execute();
     }
 
-    private void generateAndAddSeries(int max, LineAndPointFormatter formatter) {
+    private void generateAndAddSeries(int max, LineAndPointFormatter formatter, BlockAutoPan autoPan) {
         int s = SERIES_SIZE;
-        final FastFixedSizeEditableXYSeries series = new FastFixedSizeEditableXYSeries("s" + max, s);
+        final FastFixedSizeEditableXYSeries series = new FastFixedSizeEditableXYSeries("s" + max, s, autoPan);
 
 
         final FastSampledXYSeries sampledSeries =

@@ -1,8 +1,6 @@
 package com.androidplot.xy;
 
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -22,6 +20,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private Region bound = null;
     private XYPlot plot = null;
     private double scaleFactor = 1;
+    private BlockAutoPan autoPan;
 
     @NonNull
     private List<FastNumber> xVals = new ArrayList<>();
@@ -31,7 +30,8 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private String title;
     //private int lastVisibleIndex = 0;
 
-    public FastFixedSizeEditableXYSeries(String title, int size) {
+    public FastFixedSizeEditableXYSeries(String title, int size, BlockAutoPan autoPan) {
+        this.autoPan = autoPan;
         setTitle(title);
         resize(size);
     }
@@ -60,6 +60,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
             if (plot.getOuterLimits().getMaxX().doubleValue() < getX(lastVisibleIndex).doubleValue()) {
                 boolean isBoundaries = plot.isBoundariesFrom(XYPlot.MoveType.Right);
                 plot.getOuterLimits().setMaxX(getX(lastVisibleIndex).doubleValue());
+                if(autoPan.isBlock()) return;
                 if (isBoundaries) {
                     plot.moveBoundariesTo(XYPlot.MoveType.Right, BoundaryMode.FIXED);
                     plot.redraw();
