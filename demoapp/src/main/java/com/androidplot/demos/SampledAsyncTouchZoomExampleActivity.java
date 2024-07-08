@@ -17,15 +17,11 @@
 package com.androidplot.demos;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
-import android.graphics.Paint;
-import android.graphics.PathEffect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -34,28 +30,20 @@ import android.widget.Spinner;
 
 import com.androidplot.Plot;
 import com.androidplot.Region;
-import com.androidplot.ui.Size;
-import com.androidplot.ui.SizeMetric;
-import com.androidplot.ui.SizeMode;
-import com.androidplot.xy.BlockAutoPan;
+import com.androidplot.xy.PlotState;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.FastFixedSizeEditableXYSeries;
 import com.androidplot.xy.FastSampledXYSeries;
-import com.androidplot.xy.FixedSizeEditableXYSeries;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.OrderedXYSeries;
 import com.androidplot.xy.PanZoom;
-import com.androidplot.xy.SampledXYSeries;
 import com.androidplot.xy.StepModelFit;
 import com.androidplot.xy.WindowZoomEstimator;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYPointDetection;
-import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.ZoomEstimator;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Random;
 
 public class SampledAsyncTouchZoomExampleActivity extends Activity {
@@ -180,7 +168,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     private void generateSeriesData() {
         new AsyncTask() {
 
-            BlockAutoPan autoPan = new BlockAutoPan(true);
+            PlotState autoPan = new PlotState(true);
 
             @Override
             protected Object doInBackground(Object[] objects) {
@@ -215,7 +203,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         }.execute();
     }
 
-    private void generateAndAddSeries(int max, LineAndPointFormatter formatter, BlockAutoPan autoPan) {
+    private void generateAndAddSeries(int max, LineAndPointFormatter formatter, PlotState autoPan) {
         int s = SERIES_SIZE;
         final FastFixedSizeEditableXYSeries series = new FastFixedSizeEditableXYSeries("s" + max, s, autoPan);
 

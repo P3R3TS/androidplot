@@ -20,7 +20,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private Region bound = null;
     private XYPlot plot = null;
     private double scaleFactor = 1;
-    private BlockAutoPan autoPan;
+    private PlotState autoPan;
 
     @NonNull
     private List<FastNumber> xVals = new ArrayList<>();
@@ -30,7 +30,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private String title;
     //private int lastVisibleIndex = 0;
 
-    public FastFixedSizeEditableXYSeries(String title, int size, BlockAutoPan autoPan) {
+    public FastFixedSizeEditableXYSeries(String title, int size, PlotState autoPan) {
         this.autoPan = autoPan;
         setTitle(title);
         resize(size);
@@ -147,6 +147,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     @Override
     public void setPlot(XYPlot plot) {
         this.plot = plot;
+        this.autoPan.setPlot(plot);
     }
 
     @Override
