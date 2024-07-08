@@ -21,6 +21,8 @@ import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -29,22 +31,30 @@ import android.widget.Spinner;
 
 import com.androidplot.Plot;
 import com.androidplot.Region;
+import com.androidplot.ui.Size;
+import com.androidplot.ui.SizeMetric;
+import com.androidplot.ui.SizeMode;
 import com.androidplot.xy.BoundaryMode;
+import com.androidplot.xy.FastFixedSizeEditableXYSeries;
+import com.androidplot.xy.FastSampledXYSeries;
 import com.androidplot.xy.FixedSizeEditableXYSeries;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.OrderedXYSeries;
 import com.androidplot.xy.PanZoom;
 import com.androidplot.xy.SampledXYSeries;
 import com.androidplot.xy.StepModelFit;
+import com.androidplot.xy.WindowZoomEstimator;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
+import com.androidplot.xy.XYPointDetection;
+import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.ZoomEstimator;
 
 import java.text.DecimalFormat;
 import java.util.Random;
 
 public class SampledAsyncTouchZoomExampleActivity extends Activity {
-    private static final int SERIES_SIZE = 3000;
+    private static final int SERIES_SIZE = 43200;
     private static final int SERIES_ALPHA = 20;
     private static final int NUM_GRIDLINES = 5;
     private XYPlot plot;
@@ -53,6 +63,11 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     private Spinner panSpinner;
     private Spinner zoomSpinner;
 
+    private FastFixedSizeEditableXYSeries s1;
+    private FastFixedSizeEditableXYSeries s2;
+    private FastFixedSizeEditableXYSeries s3;
+    private FastFixedSizeEditableXYSeries s4;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.touch_zoom_async_example);
@@ -60,7 +75,8 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                reset();
+                plot.moveBoundariesTo(XYPlot.MoveType.Right, BoundaryMode.FIXED);
+                plot.redraw();
             }
         });
         plot = findViewById(R.id.plot);
@@ -72,10 +88,10 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 
         // predefine the stepping of both axis
         // increment will be chosen from list to best fit NUM_GRIDLINES grid lines
-        double[] inc_domain = new double[]{10,50,100,500};
-        double[] inc_range = new double[]{1,5,10,20,50,100};
-        plot.setDomainStepModel(new StepModelFit(plot.getBounds().getxRegion(),inc_domain,NUM_GRIDLINES));
-        plot.setRangeStepModel( new StepModelFit(plot.getBounds().getyRegion(),inc_range,NUM_GRIDLINES));
+        double[] inc_domain = new double[]{10, 50, 100, 500};
+        double[] inc_range = new double[]{1, 5, 10, 20, 50, 100};
+        plot.setDomainStepModel(new StepModelFit(plot.getBounds().getxRegion(), inc_domain, NUM_GRIDLINES));
+        plot.setRangeStepModel(new StepModelFit(plot.getBounds().getyRegion(), inc_range, NUM_GRIDLINES));
 
 
         panSpinner = findViewById(R.id.pan_spinner);
@@ -93,12 +109,28 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 
         plot.setBorderStyle(Plot.BorderStyle.NONE, null, null);
 
-        panZoom = PanZoom.attach(plot, PanZoom.Pan.BOTH, PanZoom.Zoom.STRETCH_DYNAMIC, PanZoom.ZoomLimit.LIMITS, new Region(20, 1000));
-        plot.getOuterLimits().set(0, 3000, 0, 1000);
+        plot.getLayoutManager().remove(plot.getLegend());
+        plot.getLayoutManager().remove(plot.getTitle());
+        plot.getGraph().setSize(new Size(
+                1.0f, SizeMode.RELATIVE,
+                1.0f, SizeMode.RELATIVE
+        ));
+
+        panZoom = PanZoom.attach(plot, PanZoom.Pan.BOTH, PanZoom.Zoom.STRETCH_HORIZONTAL, PanZoom.ZoomLimit.LIMITS, new Region(20, 3600));
+
+        panZoom.setDelegate(new XYPointDetection(new XYPointDetection.XYPointDetect() {
+
+            @Override
+            public void onPointXClick(double x, double xVal) {
+                Log.d("test", "xScreen: " + x + " xValue: " + xVal);
+            }
+        }));
+
+        plot.getOuterLimits().set(0, 100, 0, 1000);
         initSpinners();
 
         // enable autoselect of sampling level based on visible boundaries:
-        plot.getRegistry().setEstimator(new ZoomEstimator());
+        plot.getRegistry().setEstimator(new WindowZoomEstimator());
 
         generateSeriesData();
         reset();
@@ -110,45 +142,61 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         plot.redraw();
     }
 
-    private ProgressDialog progress;
 
     private void generateSeriesData() {
-        progress = ProgressDialog.show(this, "Loading", "Please wait...", true);
         new AsyncTask() {
 
             @Override
             protected Object doInBackground(Object[] objects) {
-                generateAndAddSeries(625, new LineAndPointFormatter(Color.rgb(50, 0, 0), null,
+                generateAndAddSeries(800, new LineAndPointFormatter(Color.rgb(50, 0, 0), null,
                         Color.argb(SERIES_ALPHA, 100, 0, 0), null));
-                generateAndAddSeries(125, new LineAndPointFormatter(Color.rgb(50, 50, 0), null,
+                generateAndAddSeries(400, new LineAndPointFormatter(Color.rgb(50, 50, 0), null,
                         Color.argb(SERIES_ALPHA, 100, 100, 0), null));
-                generateAndAddSeries(25, new LineAndPointFormatter(Color.rgb(0, 50, 0), null,
+                generateAndAddSeries(200, new LineAndPointFormatter(Color.rgb(0, 50, 0), null,
                         Color.argb(SERIES_ALPHA, 0, 100, 0), null));
-                generateAndAddSeries(5, new LineAndPointFormatter(Color.rgb(0, 0, 0), null,
+                generateAndAddSeries(100, new LineAndPointFormatter(Color.rgb(0, 0, 0), null,
                         Color.argb(SERIES_ALPHA, 0, 0, 150), null));
+
+                Random r = new Random();
+
+                for (int i = 0; i < SERIES_SIZE; i++) {
+
+                    s1.setXYAndRedraw(i, r.nextInt(800), i);
+                    s2.setXYAndRedraw(i, r.nextInt(400), i);
+                    s3.setXYAndRedraw(i, r.nextInt(200), i);
+                    s4.setXYAndRedraw(i, r.nextInt(100), i);
+//                        series.addXY(i, r.nextInt(max));
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+//            series.setY(, i);
+                }
                 return null;
             }
 
             @Override
             protected void onPostExecute(Object result) {
-                progress.dismiss();
-                plot.redraw();
+
             }
         }.execute();
     }
 
     private void generateAndAddSeries(int max, LineAndPointFormatter formatter) {
-        final FixedSizeEditableXYSeries series = new FixedSizeEditableXYSeries("s" + max, SERIES_SIZE);
-        Random r = new Random();
-        for(int i = 0; i < SERIES_SIZE; i++) {
-            series.setX(i, i);
-            series.setY(r.nextInt(max), i);
-        }
+        int s = SERIES_SIZE;
+        final FastFixedSizeEditableXYSeries series = new FastFixedSizeEditableXYSeries("s" + max, s);
 
-        // wrap our series in a SampledXYSeries with a threshold of 1000.
-        final SampledXYSeries sampledSeries =
-                new SampledXYSeries(series, OrderedXYSeries.XOrder.ASCENDING, 2,100);
+
+        final FastSampledXYSeries sampledSeries =
+                new FastSampledXYSeries(series, OrderedXYSeries.XOrder.ASCENDING, 100);
+
         plot.addSeries(sampledSeries, formatter);
+
+        if (s1 == null) s1 = series;
+        else if (s2 == null) s2 = series;
+        else if (s3 == null) s3 = series;
+        else if (s4 == null) s4 = series;
     }
 
     private void initSpinners() {
@@ -187,7 +235,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     // (optional) save the current pan/zoom state
     @Override
     public void onSaveInstanceState(Bundle bundle) {
-         bundle.putSerializable("pan-zoom-state", panZoom.getState());
+        bundle.putSerializable("pan-zoom-state", panZoom.getState());
     }
 
     // (optional) restore the previously saved pan/zoom state

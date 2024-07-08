@@ -1,6 +1,5 @@
 package com.androidplot.xy;
 
-import static java.lang.Math.abs;
 
 import android.graphics.RectF;
 import android.graphics.PointF;
@@ -12,8 +11,10 @@ import android.view.*;
 import com.androidplot.*;
 import com.androidplot.util.*;
 
+import java.awt.font.NumericShaper;
 import java.io.Serializable;
 import java.util.*;
+
 
 /**
  * Enables basic pan/zoom touch behavior for an {@link XYPlot}.
@@ -28,7 +29,7 @@ public class PanZoom implements View.OnTouchListener {
     protected static final int FIRST_FINGER = 0;
     protected static final int SECOND_FINGER = 1;
 
-    private XYPlot plot;
+    private final XYPlot plot;
     private Pan pan;
     private Zoom zoom;
 
@@ -36,8 +37,6 @@ public class PanZoom implements View.OnTouchListener {
     private ZoomLimit zoomLimit;
     private boolean isEnabled = true;
 
-    private float dragThreshold = 20;
-    private Zoom dragDirection = Zoom.NONE;
     private DragState dragState = DragState.NONE;
     private PointF firstFingerPos;
 
@@ -86,9 +85,7 @@ public class PanZoom implements View.OnTouchListener {
         /**
          * Zoom each axis by the same amount, specifically the total distance between each finger.
          */
-        SCALE,
-
-        STRETCH_DYNAMIC,
+        SCALE
     }
 
     /**
@@ -269,7 +266,6 @@ public class PanZoom implements View.OnTouchListener {
                 case MotionEvent.ACTION_POINTER_DOWN: // second finger
                 {
                     setFingersRect(fingerDistance(event));
-                    dragDirection = Zoom.NONE;
                     // the distance run is done to avoid false alarms
                     if (getFingersRect().width() > MIN_DIST_2_FING || getFingersRect().width() < -MIN_DIST_2_FING) {
                         dragState = DragState.TWO_FINGERS;
@@ -408,44 +404,37 @@ public class PanZoom implements View.OnTouchListener {
         }
         RectF newRect = new RectF();
 
+
         float scaleX = 1;
         float scaleY = 1;
-        Zoom zoomValue = zoom;
-        if(zoomValue == Zoom.STRETCH_DYNAMIC)
-        {
-            if(dragDirection == Zoom.NONE){
-                float dirX = oldFingersRect.width() - getFingersRect().width();
-                float dirY = oldFingersRect.height() - getFingersRect().height();
-                if(abs(dirX) >  abs(dirY)) dragDirection = Zoom.STRETCH_HORIZONTAL;
-                else dragDirection = Zoom.STRETCH_VERTICAL;
-                Log.d("zoom", "dd: " + dragDirection.name());
-            }
-            zoomValue = dragDirection;
-        }
+        float centerX = (plot.getLeft() + plot.getRight()) / 2f;
+        float centerY = (plot.getTop() + plot.getBottom()) / 2f;
+        float offsetX = 0;
+        float offsetY = 0;
 
-        switch (zoomValue) {
+        switch (zoom) {
             case STRETCH_HORIZONTAL:
-                scaleX = oldFingersRect.width() / getFingersRect().width();
+                scaleX = oldFingersRect.width() / newFingersRect.width();
                 if (!isValidScale(scaleX)) {
                     return;
                 }
                 break;
             case STRETCH_VERTICAL:
-                scaleY = oldFingersRect.height() / getFingersRect().height();
+                scaleY = oldFingersRect.height() / newFingersRect.height();
                 if (!isValidScale(scaleY)) {
                     return;
                 }
                 break;
             case STRETCH_BOTH:
-                scaleX = oldFingersRect.width() / getFingersRect().width();
-                scaleY = oldFingersRect.height() / getFingersRect().height();
+                scaleX = oldFingersRect.width() / newFingersRect.width();
+                scaleY = oldFingersRect.height() / newFingersRect.height();
                 if (!isValidScale(scaleX) || !isValidScale(scaleY)) {
                     return;
                 }
                 break;
             case SCALE:
                 float sc1 = (float) Math.hypot(oldFingersRect.height(), oldFingersRect.width());
-                float sc2 = (float) Math.hypot(getFingersRect().height(), getFingersRect().width());
+                float sc2 = (float) Math.hypot(newFingersRect.height(), newFingersRect.width());
                 float sc = sc1 / sc2;
                 scaleX = sc;
                 scaleY = sc;
@@ -458,14 +447,14 @@ public class PanZoom implements View.OnTouchListener {
         if (EnumSet.of(
                 Zoom.STRETCH_HORIZONTAL,
                 Zoom.STRETCH_BOTH,
-                Zoom.SCALE).contains(zoomValue)) {
+                Zoom.SCALE).contains(zoom)) {
             calculateZoom(newRect, scaleX, true);
             adjustDomainBoundary(newRect.left, newRect.right, BoundaryMode.FIXED);
         }
         if (EnumSet.of(
                 Zoom.STRETCH_VERTICAL,
                 Zoom.STRETCH_BOTH,
-                Zoom.SCALE).contains(zoomValue)) {
+                Zoom.SCALE).contains(zoom)) {
             calculateZoom(newRect, scaleY, false);
             adjustRangeBoundary(newRect.top, newRect.bottom, BoundaryMode.FIXED);
         }

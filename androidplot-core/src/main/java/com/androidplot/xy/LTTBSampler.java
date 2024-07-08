@@ -63,18 +63,24 @@ public class LTTBSampler implements Sampler {
             }
             pointCX /= pointCSize;
             pointCY /= pointCSize;
-            double pointAX = rawData.getX(a + startIndex).doubleValue();
-            double pointAY = rawData.getY(a + startIndex).doubleValue();
+            Number pointAX = rawData.getX(a + startIndex);
+            Number pointAY = rawData.getY(a + startIndex);
             // Get the range for bucket b
             int pointBStart = (int) Math.floor((i + 0) * bucketSize) + 1;
             final int pointBEnd = (int) Math.floor((i + 1) * bucketSize) + 1;
             double maxArea = -1;
             XYCoords maxAreaPoint = null;
             for (; pointBStart < pointBEnd; pointBStart++) {
-                final double area = Math.abs((pointAX - pointCX) * (rawData.getY(pointBStart + startIndex)
-                        .doubleValue() - pointAY) - (pointAX - rawData.getX(pointBStart + startIndex)
-                        .doubleValue())
-                        * (pointCY - pointAY)) * 0.5;
+                double area;
+                try {
+                    area = Math.abs((pointAX.doubleValue() - pointCX) * (rawData.getY(pointBStart + startIndex)
+                            .doubleValue() - pointAY.doubleValue()) - (pointAX.doubleValue() - rawData.getX(pointBStart + startIndex)
+                            .doubleValue())
+                            * (pointCY - pointAY.doubleValue())) * 0.5;
+                } catch (NullPointerException e)
+                {
+                    area = maxArea;
+                }
                 if (area > maxArea) {
                     if(rawData.getY(pointBStart + startIndex) == null) {
                         Log.i("LTTB", "Null value encountered in raw data at index: " + pointBStart);
@@ -85,7 +91,12 @@ public class LTTBSampler implements Sampler {
                     nextA = pointBStart; // Next a is this b
                 }
             }
-            setSample(sampled, maxAreaPoint.x, maxAreaPoint.y, sampledIndex, bounds);
+            if(maxAreaPoint == null)
+            {
+                setSample(sampled, null, null, sampledIndex, bounds);
+            } else {
+                setSample(sampled, maxAreaPoint.x, maxAreaPoint.y, sampledIndex, bounds);
+            }
             sampledIndex++;
             a = nextA; // This a is the next a (chosen b)
         }
@@ -104,3 +115,5 @@ public class LTTBSampler implements Sampler {
         sampled.setY(y, sampleIndex);
     }
 }
+
+

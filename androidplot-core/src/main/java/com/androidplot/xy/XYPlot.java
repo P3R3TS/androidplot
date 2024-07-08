@@ -16,6 +16,8 @@
 
 package com.androidplot.xy;
 
+import static java.lang.Math.abs;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -27,6 +29,7 @@ import android.util.AttributeSet;
 
 import com.androidplot.Plot;
 import com.androidplot.R;
+import com.androidplot.Region;
 import com.androidplot.ui.Anchor;
 import com.androidplot.ui.DynamicTableModel;
 import com.androidplot.ui.HorizontalPositioning;
@@ -131,6 +134,11 @@ public class XYPlot extends Plot<XYSeries, XYSeriesFormatter, XYSeriesRenderer, 
         Bar
     }
 
+    public enum AutoPan {
+        TRUE,
+        FALSE
+    }
+
     public XYPlot(Context context, String title) {
         super(context, title);
     }
@@ -145,7 +153,6 @@ public class XYPlot extends Plot<XYSeries, XYSeriesFormatter, XYSeriesRenderer, 
 
     public XYPlot(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-
     }
 
     @Override
@@ -884,6 +891,46 @@ public class XYPlot extends Plot<XYSeries, XYSeriesFormatter, XYSeriesRenderer, 
 
     public void setRangeLabel(String rangeLabel) {
         getRangeTitle().setText(rangeLabel);
+    }
+
+    public enum MoveType{
+        Left,
+        Right
+
+        }
+
+    public synchronized boolean isBoundariesFrom(MoveType moveType) {
+        return isBoundariesFrom(moveType, 2);
+    }
+
+
+
+    public synchronized boolean isBoundariesFrom(MoveType moveType, double offset) {
+        switch (moveType) {
+            case Left:
+                return abs(bounds.getxRegion().getMin().longValue() - getOuterLimits().getxRegion().getMin().longValue()) <= offset;
+            case Right:
+                return abs(bounds.getxRegion().getMax().longValue() - getOuterLimits().getxRegion().getMax().longValue()) <= offset;
+            default:
+                return false;
+        }
+    }
+
+    public synchronized void moveBoundariesTo(MoveType moveType, BoundaryMode mode){
+        moveBoundariesTo(moveType, mode, 0);
+    }
+
+    public synchronized void moveBoundariesTo(MoveType moveType, BoundaryMode mode, double offset) {
+        double length = bounds.getxRegion().length().longValue();
+        RectRegion limits = getOuterLimits();
+        switch (moveType) {
+            case Left:
+                setDomainBoundaries(limits.getMinX().longValue() + offset, limits.getMinX().longValue() + length + offset, mode);
+                break;
+            case Right:
+                setDomainBoundaries(limits.getMaxX().longValue() - length - offset, limits.getMaxX().longValue() - offset, mode);
+                break;
+        }
     }
 
     /**

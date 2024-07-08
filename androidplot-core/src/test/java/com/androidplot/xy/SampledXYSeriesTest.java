@@ -82,7 +82,7 @@ public class SampledXYSeriesTest extends AndroidplotTest {
     /**
      * Ignored until null support is added to {@link LTTBSampler}.
      */
-    @Ignore
+    //@Ignore
     @Test
     public void testResample_supportsNullVals() {
         XYSeries rawData = TestUtils.generateXYSeriesWithNulls("my series", 10000);

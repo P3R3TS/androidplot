@@ -1,5 +1,7 @@
 package com.androidplot.xy;
 
+import android.util.Log;
+
 import com.androidplot.*;
 import com.androidplot.util.SeriesUtils;
 
@@ -23,13 +25,13 @@ import java.util.*;
  * 125 - 8x sampling
  *
  */
-public class SampledXYSeries implements FastXYSeries, OrderedXYSeries {
+public class SampledXYSeries implements FastXYSeries, OrderedXYSeries, ZoomEstimatorRequests {
     private int threshold;
     private Sampler algorithm = new LTTBSampler();
 
     private XYSeries rawData;
 
-    private List<EditableXYSeries> zoomLevels;
+    private List<EditableXYSeries> zoomLevels = new ArrayList<>();;
 
     private XYSeries activeSeries;
 
@@ -38,6 +40,7 @@ public class SampledXYSeries implements FastXYSeries, OrderedXYSeries {
 
     private final XOrder xOrder;
     private float ratio;
+
 
     /**
      *
@@ -106,7 +109,6 @@ public class SampledXYSeries implements FastXYSeries, OrderedXYSeries {
         if(lastResamplingException != null) {
             throw new RuntimeException("Exception encountered during resampling", lastResamplingException);
         }
-
     }
 
     protected List<EditableXYSeries> getZoomLevels() {
@@ -119,6 +121,7 @@ public class SampledXYSeries implements FastXYSeries, OrderedXYSeries {
      * in an actual factor of 4x.
      * @param factor
      */
+    @Override
     public void setZoomFactor(double factor) {
         if(factor <= 1) {
             activeSeries = rawData;
@@ -141,6 +144,7 @@ public class SampledXYSeries implements FastXYSeries, OrderedXYSeries {
         return index > 0 ? index - 1 : 0;
     }
 
+    @Override
     public double getMaxZoomFactor() {
         return Math.pow(getRatio(), zoomLevels.size());
     }
@@ -185,6 +189,7 @@ public class SampledXYSeries implements FastXYSeries, OrderedXYSeries {
         this.threshold = threshold;
     }
 
+    @Override
     public RectRegion getBounds() {
         return bounds;
     }
@@ -208,7 +213,7 @@ public class SampledXYSeries implements FastXYSeries, OrderedXYSeries {
     }
 
     public void setRatio(float ratio) {
-        if(ratio <= 1) {
+        if (ratio <= 1) {
             throw new IllegalArgumentException("Ratio must be greater than 1");
         }
         this.ratio = ratio;
