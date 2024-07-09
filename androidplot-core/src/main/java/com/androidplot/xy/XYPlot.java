@@ -103,6 +103,8 @@ public class XYPlot extends Plot<XYSeries, XYSeriesFormatter, XYSeriesRenderer, 
     private Number prevMinY;
     private Number prevMaxY;
 
+    private PanZoom panZoom = null;
+
     /**
      * The inner and outer limits define a kind of picture-frame shape area that is used as the valid
      * region for setting domain/range boundaries.  If the set boundaries exceed one of these limits
@@ -137,6 +139,14 @@ public class XYPlot extends Plot<XYSeries, XYSeriesFormatter, XYSeriesRenderer, 
     public enum AutoPan {
         TRUE,
         FALSE
+    }
+
+    public void setPanZoom(PanZoom panZoom) {
+        this.panZoom = panZoom;
+    }
+
+    public PanZoom getPanZoom() {
+        return panZoom;
     }
 
     public XYPlot(Context context, String title) {

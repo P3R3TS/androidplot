@@ -168,6 +168,7 @@ public class PanZoom implements View.OnTouchListener {
         this.zoom = zoom;
         this.zoomLimit = limit;
         this.axisRegion = zoomRegion;
+        plot.setPanZoom(this);
     }
 
     public State getState() {

@@ -11,7 +11,7 @@ public class XYPointDetection implements View.OnTouchListener{
 
     private Number lastX;
 
-    private enum State{
+    public enum State{
         NONE,
         READY,
         SHOW,
@@ -22,7 +22,7 @@ public class XYPointDetection implements View.OnTouchListener{
          * @param x xScreen
          * @param xVal xValue on graph
          */
-        void onPointXClick(double x, double xVal);
+        void onPointXClick(State state, double x, double xVal);
     }
 
     public XYPointDetection(XYPointDetect onPointDetect)
@@ -51,7 +51,7 @@ public class XYPointDetection implements View.OnTouchListener{
                     if(state == State.READY) state = State.SHOW;
                     break;
             }
-            if(state == State.SHOW)
+            if(state == State.SHOW || state == State.NONE)
             {
                 if(view instanceof XYPlot){
                     lastX = null;
@@ -62,7 +62,7 @@ public class XYPointDetection implements View.OnTouchListener{
 
                     if(x != null)
                     {
-                        onPointDetect.onPointXClick(xPoint, x.doubleValue());
+                        onPointDetect.onPointXClick(state, xPoint, x.doubleValue());
                     }
                 }
             }

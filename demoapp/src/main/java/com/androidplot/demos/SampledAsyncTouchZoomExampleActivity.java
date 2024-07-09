@@ -143,7 +143,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         panZoom.setDelegate(new XYPointDetection(new XYPointDetection.XYPointDetect() {
 
             @Override
-            public void onPointXClick(double x, double xVal) {
+            public void onPointXClick(XYPointDetection.State state, double x, double xVal) {
                 Log.d("test", "xScreen: " + x + " xValue: " + xVal);
             }
         }));
