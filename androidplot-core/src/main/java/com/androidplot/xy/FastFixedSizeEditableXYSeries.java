@@ -61,7 +61,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
                 boolean isBoundaries = plot.isBoundariesFrom(XYPlot.MoveType.Right);
                 plot.getOuterLimits().setMaxX(getX(lastVisibleIndex).doubleValue());
                 if(autoPan.isBlock()) return;
-                if (isBoundaries) {
+                if (isBoundaries || autoPan.isScrollNonBlock()) {
                     plot.moveBoundariesTo(XYPlot.MoveType.Right, BoundaryMode.FIXED);
                     plot.redraw();
                 }

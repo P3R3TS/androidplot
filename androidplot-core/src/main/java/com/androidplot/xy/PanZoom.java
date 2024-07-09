@@ -43,6 +43,8 @@ public class PanZoom implements View.OnTouchListener {
     // rectangle created by the space between two fingers
     protected RectF fingersRect;
     private View.OnTouchListener delegate;
+    private View.OnTouchListener onPanDelegate;
+    private View.OnTouchListener onZoomDelegate;
     private State state = new State();
     private ZoomFactor zoomFactor;
 
@@ -380,6 +382,8 @@ public class PanZoom implements View.OnTouchListener {
             adjustRangeBoundary(newBounds.getMin(), newBounds.getMax(), BoundaryMode.FIXED);
         }
 
+        if(onPanDelegate != null) onPanDelegate.onTouch(plot, null);
+
         plot.redraw();
     }
 
@@ -494,6 +498,9 @@ public class PanZoom implements View.OnTouchListener {
             calculateZoom(newRect, scaleY, false);
             adjustRangeBoundary(newRect.top, newRect.bottom, BoundaryMode.FIXED);
         }
+
+        if(onZoomDelegate != null) onZoomDelegate.onTouch(plot, null);
+
         plot.redraw();
     }
 
@@ -637,6 +644,22 @@ public class PanZoom implements View.OnTouchListener {
      */
     public void setDelegate(View.OnTouchListener delegate) {
         this.delegate = delegate;
+    }
+
+    public void setOnPanDelegate(View.OnTouchListener onPanDelegate) {
+        this.onPanDelegate = onPanDelegate;
+    }
+
+    public View.OnTouchListener getOnPanDelegate() {
+        return onPanDelegate;
+    }
+
+    public void setOnZoomDelegate(View.OnTouchListener onZoomDelegate) {
+        this.onZoomDelegate = onZoomDelegate;
+    }
+
+    public View.OnTouchListener getOnZoomDelegate() {
+        return onZoomDelegate;
     }
 
     public void reset() {
