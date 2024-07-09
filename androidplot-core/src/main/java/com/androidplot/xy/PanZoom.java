@@ -44,6 +44,13 @@ public class PanZoom implements View.OnTouchListener {
     protected RectF fingersRect;
     private View.OnTouchListener delegate;
     private State state = new State();
+    private ZoomFactor zoomFactor;
+
+    public enum ZoomFactor {
+        LEFT,
+        CENTER,
+        RIGHT
+    }
 
     // Definition of the touch states
     protected enum DragState {
@@ -150,6 +157,7 @@ public class PanZoom implements View.OnTouchListener {
         this.zoom = zoom;
         this.zoomLimit = ZoomLimit.OUTER;
         this.axisRegion = new Region(0, 1000);
+        this.zoomFactor = ZoomFactor.CENTER;
     }
 
     // additional constructor not to break api
@@ -159,6 +167,7 @@ public class PanZoom implements View.OnTouchListener {
         this.zoom = zoom;
         this.zoomLimit = limit;
         this.axisRegion = new Region(0, 1000);
+        this.zoomFactor = ZoomFactor.CENTER;
     }
 
     // additional constructor not to break api
@@ -168,8 +177,19 @@ public class PanZoom implements View.OnTouchListener {
         this.zoom = zoom;
         this.zoomLimit = limit;
         this.axisRegion = zoomRegion;
-        plot.setPanZoom(this);
+        this.zoomFactor = ZoomFactor.CENTER;
     }
+
+    // additional constructor not to break api
+    protected PanZoom(@NonNull XYPlot plot, Pan pan, Zoom zoom, ZoomLimit limit, Region zoomRegion, ZoomFactor zoomFactor) {
+        this.plot = plot;
+        this.pan = pan;
+        this.zoom = zoom;
+        this.zoomLimit = limit;
+        this.axisRegion = zoomRegion;
+        this.zoomFactor = zoomFactor;
+    }
+
 
     public State getState() {
         return this.state;
@@ -225,6 +245,7 @@ public class PanZoom implements View.OnTouchListener {
     public static PanZoom attach(@NonNull XYPlot plot, @NonNull Pan pan, @NonNull Zoom zoom, @NonNull ZoomLimit limit) {
         PanZoom pz = new PanZoom(plot, pan, zoom, limit);
         plot.setOnTouchListener(pz);
+        plot.setPanZoom(pz);
         return pz;
     }
 
@@ -240,6 +261,24 @@ public class PanZoom implements View.OnTouchListener {
     public static PanZoom attach(@NonNull XYPlot plot, @NonNull Pan pan, @NonNull Zoom zoom, @NonNull ZoomLimit limit, @NonNull Region zoomRegion) {
         PanZoom pz = new PanZoom(plot, pan, zoom, limit, zoomRegion);
         plot.setOnTouchListener(pz);
+        plot.setPanZoom(pz);
+        return pz;
+    }
+
+    /**
+     * New method for enabling pan/zoom behavior on an instance of limits.
+     * @param plot
+     * @param pan
+     * @param zoom
+     * @param limit
+     * @param zoomRegion
+     * @param zoomFactor
+     * @return
+     */
+    public static PanZoom attach(@NonNull XYPlot plot, @NonNull Pan pan, @NonNull Zoom zoom, @NonNull ZoomLimit limit, @NonNull Region zoomRegion, @NonNull ZoomFactor zoomFactor) {
+        PanZoom pz = new PanZoom(plot, pan, zoom, limit, zoomRegion, zoomFactor);
+        plot.setOnTouchListener(pz);
+        plot.setPanZoom(pz);
         return pz;
     }
 
@@ -408,10 +447,6 @@ public class PanZoom implements View.OnTouchListener {
 
         float scaleX = 1;
         float scaleY = 1;
-        float centerX = (plot.getLeft() + plot.getRight()) / 2f;
-        float centerY = (plot.getTop() + plot.getBottom()) / 2f;
-        float offsetX = 0;
-        float offsetY = 0;
 
         switch (zoom) {
             case STRETCH_HORIZONTAL:
@@ -503,8 +538,22 @@ public class PanZoom implements View.OnTouchListener {
                 }
             }
 
-            newRect.left = midPoint - offset;
-            newRect.right = midPoint + offset;
+            switch (this.zoomFactor)
+            {
+                case CENTER:
+                    newRect.left = midPoint - offset;
+                    newRect.right = midPoint + offset;
+                    break;
+                case LEFT:
+                    newRect.left = bounds.getMinX().floatValue();
+                    newRect.right = midPoint + offset;
+                    break;
+                case RIGHT:
+                    newRect.left = midPoint - offset;
+                    newRect.right = bounds.getMaxX().floatValue();
+                    break;
+            }
+
             if(limits.isFullyDefined()) {
                 if (newRect.left < limits.getMinX().floatValue()) {
                     newRect.left =  limits.getMinX().floatValue();

@@ -138,7 +138,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 
         plot.setBorderStyle(Plot.BorderStyle.NONE, null, null);
 
-        panZoom = PanZoom.attach(plot, PanZoom.Pan.BOTH, PanZoom.Zoom.STRETCH_HORIZONTAL, PanZoom.ZoomLimit.LIMITS, new Region(20, 3600));
+        panZoom = PanZoom.attach(plot, PanZoom.Pan.BOTH, PanZoom.Zoom.STRETCH_HORIZONTAL, PanZoom.ZoomLimit.LIMITS, new Region(20, 3600), PanZoom.ZoomFactor.RIGHT);
 
         panZoom.setDelegate(new XYPointDetection(new XYPointDetection.XYPointDetect() {
 
