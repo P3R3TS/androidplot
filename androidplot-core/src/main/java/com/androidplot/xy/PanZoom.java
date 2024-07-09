@@ -600,6 +600,14 @@ public class PanZoom implements View.OnTouchListener {
         this.pan = pan;
     }
 
+    public void setZoomFactor(ZoomFactor zoomFactor) {
+        this.zoomFactor = zoomFactor;
+    }
+
+    public ZoomFactor getZoomFactor() {
+        return zoomFactor;
+    }
+
     public Zoom getZoom() {
         return zoom;
     }
