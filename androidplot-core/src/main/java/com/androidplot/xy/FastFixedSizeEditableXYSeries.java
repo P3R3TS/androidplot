@@ -40,11 +40,6 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
         rectRegion.union(x, y);
         xVals.set(index, FastNumber.orNull(x));
         yVals.set(index, FastNumber.orNull(y));
-        int lastVisibleIndex = (int) (index - (index % scaleFactor));
-        if (_plot.getOuterLimits().getMaxX().doubleValue() < getX(lastVisibleIndex).doubleValue()) {
-            boolean isBoundaries = _plot.isBoundariesFrom(XYPlot.MoveType.Right);
-            _plot.getOuterLimits().setMaxX(getX(lastVisibleIndex).doubleValue());
-        }
     }
 
     public interface PlotTools{
