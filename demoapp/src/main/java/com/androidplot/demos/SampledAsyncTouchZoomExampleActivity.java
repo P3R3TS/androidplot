@@ -184,6 +184,11 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 
                 for (int i = 0; i < SERIES_SIZE; i++) {
 
+//                    s1.setXY(i + 100000, r.nextInt(800) / 10f, i);
+//                    s2.setXY(i + 100000, r.nextInt(400) / 10f, i);
+//                    s3.setXY(i + 100000, r.nextInt(200) / 10f, i);
+//                    s4.setXY(i + 100000, r.nextInt(100) / 10f, i);
+
                     s1.setXYAndRedraw(i + 100000, r.nextInt(800) / 10f, i);
                     s2.setXYAndRedraw(i + 100000, r.nextInt(400) / 10f, i);
                     s3.setXYAndRedraw(i + 100000, r.nextInt(200) / 10f, i);
@@ -196,6 +201,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
                     }
 //            series.setY(, i);
                 }
+//                plot.redraw();
                 return null;
             }
 

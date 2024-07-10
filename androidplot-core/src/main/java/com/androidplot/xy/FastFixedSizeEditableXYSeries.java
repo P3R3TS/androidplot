@@ -18,7 +18,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private final RectRegion rectRegion = new RectRegion();
     private int size;
     private Region bound = null;
-    private XYPlot plot = null;
+    private XYPlot _plot = null;
     private double scaleFactor = 1;
     private PlotState autoPan;
 
@@ -40,6 +40,17 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
         rectRegion.union(x, y);
         xVals.set(index, FastNumber.orNull(x));
         yVals.set(index, FastNumber.orNull(y));
+        int lastVisibleIndex = (int) (index - (index % scaleFactor));
+        if (_plot.getOuterLimits().getMaxX().doubleValue() < getX(lastVisibleIndex).doubleValue()) {
+            boolean isBoundaries = _plot.isBoundariesFrom(XYPlot.MoveType.Right);
+            _plot.getOuterLimits().setMaxX(getX(lastVisibleIndex).doubleValue());
+        }
+    }
+
+    public interface PlotTools{
+        void redraw();
+        void setMaxX(Number maxX);
+        void moveBoundariesTo(XYPlot.MoveType moveType, BoundaryMode mode);
     }
 
     public void setXYAndRedraw(@Nullable Number x, @Nullable Number y, int index) {
@@ -47,13 +58,43 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
         xVals.set(index, FastNumber.orNull(x));
         yVals.set(index, FastNumber.orNull(y));
 
-        if (this.plot != null) {
-            if(bound != null && bound.contains(x.intValue() - 2) && plot.getOuterLimits().getMaxX().doubleValue() >= x.longValue()) this.plot.redraw();
-            resamplePan(index);
+        if (this._plot != null) {
+            if(bound != null && bound.contains(x.intValue() - 2) && _plot.getOuterLimits().getMaxX().doubleValue() >= x.longValue()) this._plot.redraw();
+            resamplePan(index, this._plot);
         }
     }
 
-    public void resamplePan(int lastIndex)
+    public void setXYAndRedraw(@Nullable Number x, @Nullable Number y, int index, PlotTools plotTools, XYPlot plot) {
+        rectRegion.union(x, y);
+        xVals.set(index, FastNumber.orNull(x));
+        yVals.set(index, FastNumber.orNull(y));
+
+        if (this._plot != null) {
+            if(bound != null && bound.contains(x.intValue() - 2) && plot.getOuterLimits().getMaxX().doubleValue() >= x.longValue()) plotTools.redraw();
+            resamplePan(index, plotTools, plot);
+        }
+    }
+
+    public void resamplePan(int lastIndex, PlotTools plotTools, XYPlot plot)
+    {
+        try {
+            int lastVisibleIndex = (int) (lastIndex - (lastIndex % scaleFactor));
+            if (plot.getOuterLimits().getMaxX().doubleValue() < getX(lastVisibleIndex).doubleValue()) {
+                boolean isBoundaries = plot.isBoundariesFrom(XYPlot.MoveType.Right);
+                plotTools.setMaxX(getX(lastVisibleIndex).doubleValue());
+                if(autoPan.isBlock()) return;
+                if (isBoundaries || autoPan.isScrollNonBlock()) {
+                    plotTools.moveBoundariesTo(XYPlot.MoveType.Right, BoundaryMode.FIXED);
+                    plotTools.redraw();
+                }
+            }
+        } catch (NullPointerException e)
+        {
+            // lastIndex is null
+        }
+    }
+
+    public void resamplePan(int lastIndex, XYPlot plot)
     {
         try {
             int lastVisibleIndex = (int) (lastIndex - (lastIndex % scaleFactor));
@@ -146,7 +187,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
 
     @Override
     public void setPlot(XYPlot plot) {
-        this.plot = plot;
+        this._plot = plot;
         this.autoPan.setPlot(plot);
     }
 
