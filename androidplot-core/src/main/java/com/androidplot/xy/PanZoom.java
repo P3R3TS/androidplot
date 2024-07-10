@@ -43,10 +43,14 @@ public class PanZoom implements View.OnTouchListener {
     // rectangle created by the space between two fingers
     protected RectF fingersRect;
     private View.OnTouchListener delegate;
-    private View.OnTouchListener onPanDelegate;
-    private View.OnTouchListener onZoomDelegate;
+    private OnPanZoomDelegate onPanDelegate;
+    private OnPanZoomDelegate onZoomDelegate;
     private State state = new State();
     private ZoomFactor zoomFactor;
+
+    public interface OnPanZoomDelegate{
+        void execute();
+    }
 
     public enum ZoomFactor {
         LEFT,
@@ -382,7 +386,7 @@ public class PanZoom implements View.OnTouchListener {
             adjustRangeBoundary(newBounds.getMin(), newBounds.getMax(), BoundaryMode.FIXED);
         }
 
-        if(onPanDelegate != null) onPanDelegate.onTouch(plot, null);
+        if(onPanDelegate != null) onPanDelegate.execute();
 
         plot.redraw();
     }
@@ -499,7 +503,7 @@ public class PanZoom implements View.OnTouchListener {
             adjustRangeBoundary(newRect.top, newRect.bottom, BoundaryMode.FIXED);
         }
 
-        if(onZoomDelegate != null) onZoomDelegate.onTouch(plot, null);
+        if(onZoomDelegate != null) onZoomDelegate.execute();
 
         plot.redraw();
     }
@@ -646,19 +650,19 @@ public class PanZoom implements View.OnTouchListener {
         this.delegate = delegate;
     }
 
-    public void setOnPanDelegate(View.OnTouchListener onPanDelegate) {
+    public void setOnPanDelegate(OnPanZoomDelegate onPanDelegate) {
         this.onPanDelegate = onPanDelegate;
     }
 
-    public View.OnTouchListener getOnPanDelegate() {
+    public OnPanZoomDelegate getOnPanDelegate() {
         return onPanDelegate;
     }
 
-    public void setOnZoomDelegate(View.OnTouchListener onZoomDelegate) {
+    public void setOnZoomDelegate(OnPanZoomDelegate onZoomDelegate) {
         this.onZoomDelegate = onZoomDelegate;
     }
 
-    public View.OnTouchListener getOnZoomDelegate() {
+    public OnPanZoomDelegate getOnZoomDelegate() {
         return onZoomDelegate;
     }
 
