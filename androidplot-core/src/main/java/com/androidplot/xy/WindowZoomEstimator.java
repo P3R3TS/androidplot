@@ -11,7 +11,6 @@ public class WindowZoomEstimator extends Estimator {
         if(sf.getSeries() instanceof FastSampledXYSeries) {
             FastSampledXYSeries oxy = (FastSampledXYSeries) sf.getSeries();
             oxy.setZoomBounds(plot.getBounds());
-            oxy.setPlot(plot);
         }
     }
 }
