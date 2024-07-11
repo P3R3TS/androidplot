@@ -81,6 +81,10 @@ public class FastSampledXYSeries implements FastXYSeries, OrderedXYSeries {
         }
     }
 
+    public double getScaleFactor(){
+        return this.scaleFactor;
+    }
+
     @Override
     public int size() {
         return sizePoints + 1;//threshold + 1;

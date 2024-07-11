@@ -189,10 +189,10 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 //                    s3.setXY(i + 100000, r.nextInt(200) / 10f, i);
 //                    s4.setXY(i + 100000, r.nextInt(100) / 10f, i);
 
-                    s1.setXYAndRedraw(i + 100000, r.nextInt(800) / 10f, i);
-                    s2.setXYAndRedraw(i + 100000, r.nextInt(400) / 10f, i);
-                    s3.setXYAndRedraw(i + 100000, r.nextInt(200) / 10f, i);
-                    s4.setXYAndRedraw(i + 100000, r.nextInt(100) / 10f, i);
+                    s1.setXY(i + 100000, r.nextInt(800) / 10f, i);
+                    s2.setXY(i + 100000, r.nextInt(400) / 10f, i);
+                    s3.setXY(i + 100000, r.nextInt(200) / 10f, i);
+                    s4.setXY(i + 100000, r.nextInt(100) / 10f, i);
 //                        series.addXY(i, r.nextInt(max));
                     try {
                         Thread.sleep(20);
