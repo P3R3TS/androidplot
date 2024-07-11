@@ -81,6 +81,11 @@ public class FastSampledXYSeries implements FastXYSeries, OrderedXYSeries {
         }
     }
 
+    public double calculateEndOffset(int endX, double scaleFactor)
+    {
+        return (endX - (endX % scaleFactor));
+    }
+
     public double getScaleFactor(){
         return this.scaleFactor;
     }

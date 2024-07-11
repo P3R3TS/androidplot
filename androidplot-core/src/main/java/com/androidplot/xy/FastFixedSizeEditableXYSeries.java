@@ -42,25 +42,6 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
         yVals.set(index, FastNumber.orNull(y));
     }
 
-    public void resamplePan(int lastIndex, XYPlot plot)
-    {
-        try {
-            int lastVisibleIndex = (int) (lastIndex - (lastIndex % scaleFactor));
-            if (plot.getOuterLimits().getMaxX().doubleValue() < getX(lastVisibleIndex).doubleValue()) {
-                boolean isBoundaries = plot.isBoundariesFrom(XYPlot.MoveType.Right);
-                plot.getOuterLimits().setMaxX(getX(lastVisibleIndex).doubleValue());
-                if(autoPan.isBlock()) return;
-                if (isBoundaries || autoPan.isScrollNonBlock()) {
-                    plot.moveBoundariesTo(XYPlot.MoveType.Right, BoundaryMode.FIXED);
-                    plot.redraw();
-                }
-            }
-        } catch (NullPointerException e)
-        {
-            // lastIndex is null
-        }
-    }
-
     @Override
     public String getTitle() {
         return this.title;
