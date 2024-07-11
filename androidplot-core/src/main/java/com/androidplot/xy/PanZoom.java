@@ -190,6 +190,7 @@ public class PanZoom implements View.OnTouchListener {
 
     // additional constructor not to break api
     protected PanZoom(@NonNull XYPlot plot, ZoomState zoomState, Pan pan, Zoom zoom,  ZoomLimit limit, Region zoomRegion, ZoomFactor zoomFactor) {
+        this.zoomState = zoomState;
         this.plot = plot;
         this.pan = pan;
         this.zoom = zoom;
