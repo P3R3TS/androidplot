@@ -178,13 +178,28 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
                 }
 
                 @Override
+                public void setZoomFactor(PanZoom.ZoomFactor zoomFactor) {
+
+                }
+
+                @Override
                 public PanZoom.Pan getPan(ZoomState state) {
                     return null;
                 }
 
                 @Override
+                public void setPan(PanZoom.Pan pan) {
+
+                }
+
+                @Override
                 public PanZoom.Zoom getZoom(ZoomState state) {
                     return null;
+                }
+
+                @Override
+                public void setZoom(PanZoom.Zoom zoom) {
+
                 }
             });
 

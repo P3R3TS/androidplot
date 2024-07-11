@@ -3,8 +3,11 @@ package com.androidplot.xy;
 public class ZoomState {
     public interface ZoomDelegate {
         PanZoom.ZoomFactor getZoomFactor(ZoomState state);
+        void setZoomFactor(PanZoom.ZoomFactor zoomFactor);
         PanZoom.Pan getPan(ZoomState state);
+        void setPan(PanZoom.Pan pan);
         PanZoom.Zoom getZoom(ZoomState state);
+        void setZoom(PanZoom.Zoom zoom);
     }
 
     public ZoomDelegate delegate;

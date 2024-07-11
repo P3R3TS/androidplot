@@ -30,8 +30,10 @@ public class PanZoom implements View.OnTouchListener {
     protected static final int SECOND_FINGER = 1;
 
     private final XYPlot plot;
-    private Pan pan;
-    private Zoom zoom;
+//    private Pan pan;
+    //    private Zoom zoom;
+    private ZoomState zoomState;
+//    private ZoomFactor zoomFactor;
 
     private Region axisRegion;
     private ZoomLimit zoomLimit;
@@ -46,8 +48,6 @@ public class PanZoom implements View.OnTouchListener {
     private OnPanZoomDelegate onPanDelegate;
     private OnPanZoomDelegate onZoomDelegate;
     private State state = new State();
-    private ZoomFactor zoomFactor;
-    private ZoomState zoomState;
 
     public interface OnPanZoomDelegate{
         void execute();
@@ -158,55 +158,86 @@ public class PanZoom implements View.OnTouchListener {
         }
     }
 
+    private class PanZoomState implements ZoomState.ZoomDelegate
+    {
+        private Pan pan;
+        private Zoom zoom;
+        private ZoomFactor zoomFactor;
+
+        @Override
+        public void setZoomFactor(ZoomFactor zoomFactor) {
+            this.zoomFactor = zoomFactor;
+        }
+        @Override
+        public void setZoom(Zoom zoom) {
+            this.zoom = zoom;
+        }
+        @Override
+        public void setPan(Pan pan) {
+            this.pan = pan;
+        }
+
+        public PanZoomState(Pan pan, Zoom zoom, ZoomFactor zoomFactor)
+        {
+            this.pan = pan;
+            this.zoom = zoom;
+            this.zoomFactor = zoomFactor;
+        }
+
+        @Override
+        public ZoomFactor getZoomFactor(ZoomState state) {
+            return this.zoomFactor;
+        }
+
+        @Override
+        public Pan getPan(ZoomState state) {
+            return this.pan;
+        }
+
+        @Override
+        public Zoom getZoom(ZoomState state) {
+            return this.zoom;
+        }
+    }
+
     protected PanZoom(@NonNull XYPlot plot, Pan pan, Zoom zoom) {
         this.plot = plot;
-        this.pan = pan;
-        this.zoom = zoom;
+        this.zoomState = new ZoomState(false, new PanZoomState(pan, zoom, ZoomFactor.CENTER));
         this.zoomLimit = ZoomLimit.OUTER;
         this.axisRegion = new Region(0, 1000);
-        this.zoomFactor = ZoomFactor.CENTER;
     }
 
 
     // additional constructor not to break api
     protected PanZoom(@NonNull XYPlot plot, Pan pan, Zoom zoom, ZoomLimit limit) {
         this.plot = plot;
-        this.pan = pan;
-        this.zoom = zoom;
+        this.zoomState = new ZoomState(false, new PanZoomState(pan, zoom, ZoomFactor.CENTER));
         this.zoomLimit = limit;
         this.axisRegion = new Region(0, 1000);
-        this.zoomFactor = ZoomFactor.CENTER;
     }
 
     // additional constructor not to break api
     protected PanZoom(@NonNull XYPlot plot, Pan pan, Zoom zoom, ZoomLimit limit, Region zoomRegion) {
         this.plot = plot;
-        this.pan = pan;
-        this.zoom = zoom;
+        this.zoomState = new ZoomState(false, new PanZoomState(pan, zoom, ZoomFactor.CENTER));
         this.zoomLimit = limit;
         this.axisRegion = zoomRegion;
-        this.zoomFactor = ZoomFactor.CENTER;
     }
 
     // additional constructor not to break api
-    protected PanZoom(@NonNull XYPlot plot, ZoomState zoomState, Pan pan, Zoom zoom,  ZoomLimit limit, Region zoomRegion, ZoomFactor zoomFactor) {
+    protected PanZoom(@NonNull XYPlot plot, ZoomState zoomState,  ZoomLimit limit, Region zoomRegion, ZoomFactor zoomFactor) {
         this.zoomState = zoomState;
         this.plot = plot;
-        this.pan = pan;
-        this.zoom = zoom;
         this.zoomLimit = limit;
         this.axisRegion = zoomRegion;
-        this.zoomFactor = zoomFactor;
     }
 
     // additional constructor not to break api
     protected PanZoom(@NonNull XYPlot plot, Pan pan, Zoom zoom, ZoomLimit limit, Region zoomRegion, ZoomFactor zoomFactor) {
         this.plot = plot;
-        this.pan = pan;
-        this.zoom = zoom;
+        this.zoomState = new ZoomState(false, new PanZoomState(pan, zoom, zoomFactor));
         this.zoomLimit = limit;
         this.axisRegion = zoomRegion;
-        this.zoomFactor = zoomFactor;
     }
 
 
@@ -311,7 +342,7 @@ public class PanZoom implements View.OnTouchListener {
      * @return
      */
     public static PanZoom attach(@NonNull XYPlot plot, @NonNull ZoomState zoomState, @NonNull ZoomLimit limit, @NonNull Region zoomRegion, @NonNull ZoomFactor zoomFactor) {
-        PanZoom pz = new PanZoom(plot, zoomState, Pan.BOTH, Zoom.SCALE, limit, zoomRegion, zoomFactor);
+        PanZoom pz = new PanZoom(plot, zoomState, limit, zoomRegion, zoomFactor);
         plot.setOnTouchListener(pz);
         plot.setPanZoom(pz);
         return pz;
@@ -328,12 +359,6 @@ public class PanZoom implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(final View view, final MotionEvent event) {
-        if(zoomState != null)
-        {
-            this.zoom = zoomState.delegate.getZoom(zoomState);
-            this.pan = zoomState.delegate.getPan(zoomState);
-            this.zoomFactor = zoomState.delegate.getZoomFactor(zoomState);
-        }
         boolean isConsumed = false;
         if (delegate != null) {
             isConsumed = delegate.onTouch(view, event);
@@ -404,18 +429,18 @@ public class PanZoom implements View.OnTouchListener {
     }
 
     protected void pan(final MotionEvent motionEvent) {
-        if (pan == Pan.NONE) {
+        if (zoomState.delegate.getPan(zoomState) == Pan.NONE) {
             return;
         }
 
         final PointF oldFirstFinger = firstFingerPos; //save old position of finger
         firstFingerPos = new PointF(motionEvent.getX(), motionEvent.getY()); //update finger position
-        if (EnumSet.of(Pan.HORIZONTAL, Pan.BOTH).contains(pan)) {
+        if (EnumSet.of(Pan.HORIZONTAL, Pan.BOTH).contains(zoomState.delegate.getPan(zoomState))) {
             Region newBounds = new Region();
             calculatePan(oldFirstFinger, newBounds, true);
             adjustDomainBoundary(newBounds.getMin(), newBounds.getMax(), BoundaryMode.FIXED);
         }
-        if (EnumSet.of(Pan.VERTICAL, Pan.BOTH).contains(pan)) {
+        if (EnumSet.of(Pan.VERTICAL, Pan.BOTH).contains(zoomState.delegate.getPan(zoomState))) {
             Region newBounds = new Region();
             calculatePan(oldFirstFinger, newBounds, false);
             adjustRangeBoundary(newBounds.getMin(), newBounds.getMax(), BoundaryMode.FIXED);
@@ -475,7 +500,7 @@ public class PanZoom implements View.OnTouchListener {
     }
 
     protected void zoom(final MotionEvent motionEvent) {
-        if (zoom == Zoom.NONE) {
+        if (zoomState.delegate.getZoom(zoomState) == Zoom.NONE) {
             return;
         }
         final RectF oldFingersRect = getFingersRect();
@@ -491,7 +516,7 @@ public class PanZoom implements View.OnTouchListener {
         float scaleX = 1;
         float scaleY = 1;
 
-        switch (zoom) {
+        switch (zoomState.delegate.getZoom(zoomState)) {
             case STRETCH_HORIZONTAL:
                 scaleX = oldFingersRect.width() / newFingersRect.width();
                 if (!isValidScale(scaleX)) {
@@ -526,14 +551,14 @@ public class PanZoom implements View.OnTouchListener {
         if (EnumSet.of(
                 Zoom.STRETCH_HORIZONTAL,
                 Zoom.STRETCH_BOTH,
-                Zoom.SCALE).contains(zoom)) {
+                Zoom.SCALE).contains(zoomState.delegate.getZoom(zoomState))) {
             calculateZoom(newRect, scaleX, true);
             adjustDomainBoundary(newRect.left, newRect.right, BoundaryMode.FIXED);
         }
         if (EnumSet.of(
                 Zoom.STRETCH_VERTICAL,
                 Zoom.STRETCH_BOTH,
-                Zoom.SCALE).contains(zoom)) {
+                Zoom.SCALE).contains(zoomState.delegate.getZoom(zoomState))) {
             calculateZoom(newRect, scaleY, false);
             adjustRangeBoundary(newRect.top, newRect.bottom, BoundaryMode.FIXED);
         }
@@ -584,7 +609,7 @@ public class PanZoom implements View.OnTouchListener {
                 }
             }
 
-            switch (this.zoomFactor)
+            switch (this.zoomState.delegate.getZoomFactor(zoomState))
             {
                 case CENTER:
                     newRect.left = midPoint - offset;
@@ -639,27 +664,27 @@ public class PanZoom implements View.OnTouchListener {
     }
 
     public Pan getPan() {
-        return pan;
+        return zoomState.delegate.getPan(zoomState);
     }
 
     public void setPan(Pan pan) {
-        this.pan = pan;
+        zoomState.delegate.setPan(pan);
     }
 
     public void setZoomFactor(ZoomFactor zoomFactor) {
-        this.zoomFactor = zoomFactor;
+        zoomState.delegate.setZoomFactor(zoomFactor);
     }
 
     public ZoomFactor getZoomFactor() {
-        return zoomFactor;
+        return zoomState.delegate.getZoomFactor(zoomState);
     }
 
     public Zoom getZoom() {
-        return zoom;
+        return zoomState.delegate.getZoom(zoomState);
     }
 
     public void setZoom(Zoom zoom) {
-        this.zoom = zoom;
+        zoomState.delegate.setZoom(zoom);
     }
 
     public ZoomLimit getZoomLimit() {
