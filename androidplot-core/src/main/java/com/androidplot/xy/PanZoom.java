@@ -47,6 +47,7 @@ public class PanZoom implements View.OnTouchListener {
     private OnPanZoomDelegate onZoomDelegate;
     private State state = new State();
     private ZoomFactor zoomFactor;
+    private ZoomState zoomState;
 
     public interface OnPanZoomDelegate{
         void execute();
@@ -166,6 +167,7 @@ public class PanZoom implements View.OnTouchListener {
         this.zoomFactor = ZoomFactor.CENTER;
     }
 
+
     // additional constructor not to break api
     protected PanZoom(@NonNull XYPlot plot, Pan pan, Zoom zoom, ZoomLimit limit) {
         this.plot = plot;
@@ -184,6 +186,16 @@ public class PanZoom implements View.OnTouchListener {
         this.zoomLimit = limit;
         this.axisRegion = zoomRegion;
         this.zoomFactor = ZoomFactor.CENTER;
+    }
+
+    // additional constructor not to break api
+    protected PanZoom(@NonNull XYPlot plot, ZoomState zoomState, Pan pan, Zoom zoom,  ZoomLimit limit, Region zoomRegion, ZoomFactor zoomFactor) {
+        this.plot = plot;
+        this.pan = pan;
+        this.zoom = zoom;
+        this.zoomLimit = limit;
+        this.axisRegion = zoomRegion;
+        this.zoomFactor = zoomFactor;
     }
 
     // additional constructor not to break api
@@ -288,6 +300,22 @@ public class PanZoom implements View.OnTouchListener {
         return pz;
     }
 
+    /**
+     * New method for enabling pan/zoom behavior on an instance of limits.
+     * @param plot
+     * @param zoomState
+     * @param limit
+     * @param zoomRegion
+     * @param zoomFactor
+     * @return
+     */
+    public static PanZoom attach(@NonNull XYPlot plot, @NonNull ZoomState zoomState, @NonNull ZoomLimit limit, @NonNull Region zoomRegion, @NonNull ZoomFactor zoomFactor) {
+        PanZoom pz = new PanZoom(plot, zoomState, Pan.BOTH, Zoom.SCALE, limit, zoomRegion, zoomFactor);
+        plot.setOnTouchListener(pz);
+        plot.setPanZoom(pz);
+        return pz;
+    }
+
 
     public boolean isEnabled() {
         return isEnabled;
@@ -299,6 +327,12 @@ public class PanZoom implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(final View view, final MotionEvent event) {
+        if(zoomState != null)
+        {
+            this.zoom = zoomState.delegate.getZoom(zoomState);
+            this.pan = zoomState.delegate.getPan(zoomState);
+            this.zoomFactor = zoomState.delegate.getZoomFactor(zoomState);
+        }
         boolean isConsumed = false;
         if (delegate != null) {
             isConsumed = delegate.onTouch(view, event);

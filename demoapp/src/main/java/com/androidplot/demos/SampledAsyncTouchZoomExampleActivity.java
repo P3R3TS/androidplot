@@ -30,7 +30,6 @@ import android.widget.Spinner;
 
 import com.androidplot.Plot;
 import com.androidplot.Region;
-import com.androidplot.xy.PlotState;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.FastFixedSizeEditableXYSeries;
 import com.androidplot.xy.FastSampledXYSeries;
@@ -42,6 +41,7 @@ import com.androidplot.xy.WindowZoomEstimator;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYPointDetection;
+import com.androidplot.xy.ZoomState;
 
 import java.text.DecimalFormat;
 import java.util.Random;
@@ -171,7 +171,22 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     private void generateSeriesData() {
         new AsyncTask() {
 
-            PlotState autoPan = new PlotState(false);
+            ZoomState autoPan = new ZoomState(false, new ZoomState.ZoomDelegate() {
+                @Override
+                public PanZoom.ZoomFactor getZoomFactor(ZoomState state) {
+                    return null;
+                }
+
+                @Override
+                public PanZoom.Pan getPan(ZoomState state) {
+                    return null;
+                }
+
+                @Override
+                public PanZoom.Zoom getZoom(ZoomState state) {
+                    return null;
+                }
+            });
 
             @Override
             protected Object doInBackground(Object[] objects) {
@@ -212,7 +227,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
         }.execute();
     }
 
-    private void generateAndAddSeries(int max, LineAndPointFormatter formatter, PlotState autoPan) {
+    private void generateAndAddSeries(int max, LineAndPointFormatter formatter, ZoomState autoPan) {
         int s = SERIES_SIZE;
         final FastFixedSizeEditableXYSeries series = new FastFixedSizeEditableXYSeries("s" + max, s);
 
