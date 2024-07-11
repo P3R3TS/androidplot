@@ -158,7 +158,7 @@ public class PanZoom implements View.OnTouchListener {
         }
     }
 
-    private class PanZoomState implements ZoomState.ZoomDelegate
+    private class PanZoomState extends ZoomDelegate
     {
         private Pan pan;
         private Zoom zoom;

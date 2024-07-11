@@ -41,6 +41,7 @@ import com.androidplot.xy.WindowZoomEstimator;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYPointDetection;
+import com.androidplot.xy.ZoomDelegate;
 import com.androidplot.xy.ZoomState;
 
 import java.text.DecimalFormat;
@@ -171,35 +172,19 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
     private void generateSeriesData() {
         new AsyncTask() {
 
-            ZoomState autoPan = new ZoomState(false, new ZoomState.ZoomDelegate() {
+            ZoomState autoPan = new ZoomState(false, new ZoomDelegate() {
                 @Override
                 public PanZoom.ZoomFactor getZoomFactor(ZoomState state) {
                     return null;
                 }
 
                 @Override
-                public void setZoomFactor(PanZoom.ZoomFactor zoomFactor) {
-
-                }
-
-                @Override
                 public PanZoom.Pan getPan(ZoomState state) {
                     return null;
                 }
-
-                @Override
-                public void setPan(PanZoom.Pan pan) {
-
-                }
-
                 @Override
                 public PanZoom.Zoom getZoom(ZoomState state) {
                     return null;
-                }
-
-                @Override
-                public void setZoom(PanZoom.Zoom zoom) {
-
                 }
             });
 
