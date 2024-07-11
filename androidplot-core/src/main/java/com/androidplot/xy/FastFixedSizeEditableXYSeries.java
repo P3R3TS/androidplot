@@ -14,13 +14,9 @@ import java.util.List;
  * An efficient implementation of {@link EditableXYSeries} intended for use cases where
  * the total number of points visible is known ahead of time and is fairly static.
  */
-public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSeries, FastSampledXYSeries.AutoRedrawable {
+public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSeries {
     private final RectRegion rectRegion = new RectRegion();
     private int size;
-    private Region bound = null;
-    private XYPlot _plot = null;
-    private double scaleFactor = 1;
-    private PlotState autoPan;
 
     @NonNull
     private List<FastNumber> xVals = new ArrayList<>();
@@ -30,8 +26,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private String title;
     //private int lastVisibleIndex = 0;
 
-    public FastFixedSizeEditableXYSeries(String title, int size, PlotState autoPan) {
-        this.autoPan = autoPan;
+    public FastFixedSizeEditableXYSeries(String title, int size) {
         setTitle(title);
         resize(size);
     }
@@ -102,27 +97,6 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
                 list.remove(list.size() - 1);
             }
         }
-    }
-
-    @Override
-    public void setBound(Region region) {
-        this.bound = region;
-    }
-
-    @Override
-    public Region getBound() {
-        return this.bound;
-    }
-
-    @Override
-    public void setPlot(XYPlot plot) {
-        this._plot = plot;
-        this.autoPan.setPlot(plot);
-    }
-
-    @Override
-    public void setScaleFactor(double rlog) {
-        scaleFactor = rlog;
     }
 
 }

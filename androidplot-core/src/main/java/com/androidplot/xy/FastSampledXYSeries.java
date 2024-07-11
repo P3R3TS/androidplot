@@ -11,19 +11,6 @@ public class FastSampledXYSeries implements FastXYSeries, OrderedXYSeries {
     private int leftOffset;
     private double ratioFactor;
     private int sizePoints;
-    private XYPlot plot;
-    private double lastScaleFactor = 1;
-
-    public interface RedrawCallback{
-        void redraw();
-    }
-
-    public interface AutoRedrawable{
-        void setBound(Region region);
-        Region getBound();
-        void setPlot(XYPlot plot);
-        void setScaleFactor(double rlog);
-    }
 
     @Override
     public RectRegion minMax() {
@@ -64,21 +51,6 @@ public class FastSampledXYSeries implements FastXYSeries, OrderedXYSeries {
         int right = (int)(rightOffset + this.scaleFactor - (rightOffset % this.scaleFactor)) - startOffset;
         if(this.leftOffset < 0) this.leftOffset = 0;
         this.sizePoints = (int) ((right - this.leftOffset) / this.scaleFactor);
-        if(rawData instanceof AutoRedrawable) {
-            ((AutoRedrawable) rawData).setBound(bounds.getxRegion());
-            if(this.lastScaleFactor != this.scaleFactor){
-                this.lastScaleFactor = this.scaleFactor;
-                ((AutoRedrawable) rawData).setScaleFactor(this.scaleFactor);
-            }
-        }
-    }
-
-    public void setPlot(XYPlot plot)
-    {
-        if(this.plot != plot){
-            if(rawData instanceof AutoRedrawable) ((AutoRedrawable)rawData).setPlot(plot);
-            this.plot = plot;
-        }
     }
 
     public double calculateEndOffset(int endX, double scaleFactor)

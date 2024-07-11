@@ -214,7 +214,7 @@ public class SampledAsyncTouchZoomExampleActivity extends Activity {
 
     private void generateAndAddSeries(int max, LineAndPointFormatter formatter, PlotState autoPan) {
         int s = SERIES_SIZE;
-        final FastFixedSizeEditableXYSeries series = new FastFixedSizeEditableXYSeries("s" + max, s, autoPan);
+        final FastFixedSizeEditableXYSeries series = new FastFixedSizeEditableXYSeries("s" + max, s);
 
 
         final FastSampledXYSeries sampledSeries =
