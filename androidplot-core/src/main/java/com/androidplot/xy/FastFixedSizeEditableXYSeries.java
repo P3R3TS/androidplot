@@ -17,6 +17,7 @@ import java.util.List;
 public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSeries {
     private RectRegion rectRegion = new RectRegion();
     private int size;
+    private final int overflow;
 
     @NonNull
     private List<FastNumber> xVals = new ArrayList<>();
@@ -24,17 +25,65 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     @NonNull
     private List<FastNumber> yVals = new ArrayList<>();
     private String title;
-    //private int lastVisibleIndex = 0;
+
+    private Number normalize(Number value, Number min, Number max){
+        if(value == null || min == null || max == null) return null;
+        double oRange = max.doubleValue() - min.doubleValue();
+        double nRange = 100;
+        return ((value.doubleValue() - min.doubleValue()) * 100.0) / oRange;
+    }
+
+    private final Object obj = new Object();
+    public void setMinMaxRangeForNormalize(Number min, Number max)
+    {
+        synchronized (obj){
+            for(int i = 0; i < this.size; i++)
+            {
+                yVals.set(i, FastNumber.orNull(normalize(yVals.get(i), min,max)));
+            }
+        }
+    }
 
     public FastFixedSizeEditableXYSeries(String title, int size) {
         setTitle(title);
         resize(size);
+        this.overflow = size / 2;
+    }
+
+    public FastFixedSizeEditableXYSeries(String title, int size, int overflow) {
+        setTitle(title);
+        resize(size);
+        this.overflow = overflow;
     }
 
     public void setXY(@Nullable Number x, @Nullable Number y, int index) {
         rectRegion.union(x, y);
         xVals.set(index, FastNumber.orNull(x));
         yVals.set(index, FastNumber.orNull(y));
+    }
+
+    public int setXYMovable(@Nullable Number x, @Nullable Number y, int index) {
+        rectRegion.union(x, y);
+        xVals.set(index, FastNumber.orNull(x));
+        yVals.set(index, FastNumber.orNull(y));
+        if(index >= this.size - 1){
+            xVals = move(xVals, overflow);
+            rectRegion.setMinX(xVals.get(0));
+            yVals = move(yVals, overflow);
+            return overflow - 1;
+        }
+        return index;
+    }
+
+    private List<FastNumber> move(List<FastNumber> list, int moveBy)
+    {
+        List<FastNumber> nList = new ArrayList<>();
+        for(int i = moveBy; i < list.size(); i++)
+        {
+            nList.add(list.get(i));
+        }
+        resize(nList, this.size);
+        return nList;
     }
 
     @Override
@@ -69,7 +118,9 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     @Override
     public Number getY(int index) {
         if (index >= this.size) return null;
-        return yVals.get(index);
+        synchronized (obj) {
+            return yVals.get(index);
+        }
     }
 
     @Override
