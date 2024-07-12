@@ -15,7 +15,7 @@ import java.util.List;
  * the total number of points visible is known ahead of time and is fairly static.
  */
 public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSeries {
-    private final RectRegion rectRegion = new RectRegion();
+    private RectRegion rectRegion = new RectRegion();
     private int size;
 
     @NonNull
@@ -49,6 +49,15 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     @Override
     public int size() {
         return xVals.size();
+    }
+
+    public void clear() {
+        for(int i = 0; i < size; i++)
+        {
+            xVals.set(i, null);
+            yVals.set(i, null);
+        }
+        rectRegion = new RectRegion();
     }
 
     @Override
