@@ -39,6 +39,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     public void setMinMaxRangeForNormalize(Number min, Number max)
     {
         if(min == null || max == null) return;
+        // Set min max
         this.min = min;
         this.max = max;
         synchronized (obj){
