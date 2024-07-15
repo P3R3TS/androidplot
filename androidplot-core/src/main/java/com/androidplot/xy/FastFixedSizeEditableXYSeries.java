@@ -45,7 +45,8 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
         synchronized (obj){
             for(int i = 0; i < this.size; i++)
             {
-                yVals.set(i, FastNumber.orNull(normalize(yVals.get(i), min,max)));
+                Number nValue = normalize(yVals.get(i), min,max);
+                yVals.set(i, FastNumber.orNull(nValue));
             }
         }
     }
