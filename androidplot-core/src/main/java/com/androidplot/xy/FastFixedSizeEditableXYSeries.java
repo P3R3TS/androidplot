@@ -70,7 +70,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     public int setXYMovable(@Nullable Number x, @Nullable Number y, int index) {
         rectRegion.union(x, y);
         xVals.set(index, FastNumber.orNull(x));
-        yVals.set(index, FastNumber.orNull(y));
+        yVals.set(index, FastNumber.orNull(normalize(y, min, max)));
         if(index >= this.size - 1){
             xVals = move(xVals, overflow);
             rectRegion.setMinX(xVals.get(0));
