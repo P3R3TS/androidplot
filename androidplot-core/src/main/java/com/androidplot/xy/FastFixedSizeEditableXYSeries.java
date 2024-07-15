@@ -35,20 +35,34 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
         return ((value.doubleValue() - min.doubleValue()) * 100.0) / oRange;
     }
 
+    private Number scale(Number value, Number inputMax, Number inputMin, Number outputMax, Number outputMin)
+    {
+        if(value == null) return null;
+        if(inputMax.doubleValue() - inputMin.doubleValue() == 0) return 0;
+        return ((outputMax.doubleValue() - outputMin.doubleValue()) * (value.doubleValue() - inputMin.doubleValue())) / (inputMax.doubleValue() - inputMin.doubleValue()) + outputMin.doubleValue();
+    }
+
+    private Number normalize(Number value, Number oMin, Number oMax, Number nMin, Number nMax){
+        if(value == null) return null;
+        double oRange = oMin.doubleValue() - oMax.doubleValue();
+        double nRange = 100;
+        return ((value.doubleValue() - min.doubleValue()) * 100.0) / oRange;
+    }
+
     private final Object obj = new Object();
     public void setMinMaxRangeForNormalize(Number min, Number max)
     {
         if(min == null || max == null) return;
-        // Set min max
-        this.min = min;
-        this.max = max;
         synchronized (obj){
             for(int i = 0; i < this.size; i++)
             {
-                Number nValue = normalize(yVals.get(i), min,max);
-                yVals.set(i, FastNumber.orNull(nValue));
+                Number nValue = scale(yVals.get(i), 100, 0, this.max, this.min);
+                yVals.set(i, FastNumber.orNull(normalize(nValue, min,max)));
             }
         }
+        // Set min max
+        this.min = min;
+        this.max = max;
     }
 
     public FastFixedSizeEditableXYSeries(String title, int size) {
