@@ -111,13 +111,13 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
 
     @Override
     public Number getX(int index) {
-        if (index >= this.size) return null;
+        if (index >= this.size || index < 0) return null;
         return xVals.get(index);
     }
 
     @Override
     public Number getY(int index) {
-        if (index >= this.size) return null;
+        if (index >= this.size || index < 0) return null;
         synchronized (obj) {
             return yVals.get(index);
         }
