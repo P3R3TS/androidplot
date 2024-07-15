@@ -18,6 +18,8 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private RectRegion rectRegion = new RectRegion();
     private int size;
     private final int overflow;
+    private Number min = 0;
+    private Number max = 100;
 
     @NonNull
     private List<FastNumber> xVals = new ArrayList<>();
@@ -27,7 +29,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private String title;
 
     private Number normalize(Number value, Number min, Number max){
-        if(value == null || min == null || max == null) return null;
+        if(value == null) return null;
         double oRange = max.doubleValue() - min.doubleValue();
         double nRange = 100;
         return ((value.doubleValue() - min.doubleValue()) * 100.0) / oRange;
@@ -36,6 +38,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     private final Object obj = new Object();
     public void setMinMaxRangeForNormalize(Number min, Number max)
     {
+        if(min == null || max == null) return;
         synchronized (obj){
             for(int i = 0; i < this.size; i++)
             {
@@ -59,7 +62,7 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     public void setXY(@Nullable Number x, @Nullable Number y, int index) {
         rectRegion.union(x, y);
         xVals.set(index, FastNumber.orNull(x));
-        yVals.set(index, FastNumber.orNull(y));
+        yVals.set(index, FastNumber.orNull(normalize(y, min, max)));
     }
 
     public int setXYMovable(@Nullable Number x, @Nullable Number y, int index) {
