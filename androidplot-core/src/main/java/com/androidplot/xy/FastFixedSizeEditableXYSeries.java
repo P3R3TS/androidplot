@@ -149,6 +149,11 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
         }
     }
 
+    public Number getTrueY(int index) {
+        Number ret = getY(index);
+        return scale(ret, 100, 0, this.max, this.min);
+    }
+
     @Override
     public RectRegion minMax() {
         return rectRegion;
