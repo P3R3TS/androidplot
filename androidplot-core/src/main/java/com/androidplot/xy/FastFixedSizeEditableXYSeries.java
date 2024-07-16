@@ -54,10 +54,13 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     {
         if(min == null || max == null) return;
         synchronized (obj){
+            rectRegion.xRegion.setMinMax(new Region());
             for(int i = 0; i < this.size; i++)
             {
-                Number nValue = scale(yVals.get(i), 100, 0, this.max, this.min);
-                yVals.set(i, FastNumber.orNull(normalize(nValue, min,max)));
+
+                Number nValue = normalize(scale(yVals.get(i), 100, 0, this.max, this.min), min,max);
+                yVals.set(i, FastNumber.orNull(nValue));
+                rectRegion.union(null, nValue);
             }
         }
         // Set min max
@@ -78,15 +81,17 @@ public class FastFixedSizeEditableXYSeries implements FastXYSeries, EditableXYSe
     }
 
     public void setXY(@Nullable Number x, @Nullable Number y, int index) {
-        rectRegion.union(x, y);
+        Number n_y = normalize(y, min, max);
+        rectRegion.union(x, n_y);
         xVals.set(index, FastNumber.orNull(x));
-        yVals.set(index, FastNumber.orNull(normalize(y, min, max)));
+        yVals.set(index, FastNumber.orNull(n_y));
     }
 
     public int setXYMovable(@Nullable Number x, @Nullable Number y, int index) {
-        rectRegion.union(x, y);
+        Number n_y = normalize(y, min, max);
+        rectRegion.union(x, n_y);
         xVals.set(index, FastNumber.orNull(x));
-        yVals.set(index, FastNumber.orNull(normalize(y, min, max)));
+        yVals.set(index, FastNumber.orNull(n_y));
         if(index >= this.size - 1){
             xVals = move(xVals, overflow);
             rectRegion.setMinX(xVals.get(0));
