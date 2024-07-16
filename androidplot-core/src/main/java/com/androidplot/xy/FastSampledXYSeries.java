@@ -24,6 +24,9 @@ public class FastSampledXYSeries implements FastXYSeries, OrderedXYSeries {
         this.threshold = threshold;
         this.xOrder = xOrder;
         this.ratioFactor = Math.log(this.ratio);
+        this.sizePoints = threshold;
+        this.leftOffset = 0;
+        this.scaleFactor = 1;
     }
 
     protected void setZoomBounds(RectRegion bounds)
